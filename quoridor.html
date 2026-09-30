@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF4CF">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>쿼리도 대결</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+/* Layout: 좌(플레이어1 패널) · 가운데 9×9 보드 · 우(플레이어2 패널), 한 화면에 맞추는 대결판 */
+:root{
+  --ground:#FFF4CF; --ground-dot1:#FFB3C7; --ground-dot2:#9FE3FF; --ground-dot3:#C8F2A6;
+  --ink:#2B2350; --muted:#6B6590;
+  --panel:#FFFFFF; --panel-ink:#2B2350; --panel-edge:#2B2350;
+  --frame:#FF6B6B; --frame-edge:#2B2350;
+  --cellA:#FFE0E8; --cellB:#DCF4FF; --cellC:#FFF3C2; --cellD:#E0F8D6;
+  --cell-edge:rgba(43,35,80,.14);
+  --accent:#3D7BFF; --accent-ink:#FFFFFF;
+  --danger:#E5383B; --ok:#2BA84A;
+  --radius:20px; --cell-radius:22%;
+  --f-display:'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-body:'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-latin:'Jua', sans-serif;
+  color-scheme:light;
+}
+:root[data-gtheme="medieval"]{
+  --ground:#17140F; --ground-dot1:rgba(201,152,47,.10); --ground-dot2:rgba(120,90,50,.12); --ground-dot3:rgba(80,70,50,.10);
+  --ink:#EFE2BF; --muted:#B9A77E;
+  --panel:#E6D5A8; --panel-ink:#2A1C0E; --panel-edge:#6B4520;
+  --frame:#4A2E17; --frame-edge:#C9982F;
+  --cellA:#8A806D; --cellB:#7C7361; --cellC:#857A66; --cellD:#776E5C;
+  --cell-edge:rgba(0,0,0,.35);
+  --accent:#C9982F; --accent-ink:#1D140A;
+  --danger:#B3261E; --ok:#6E8B3D;
+  --radius:6px; --cell-radius:8%;
+  --f-display:'Nanum Myeongjo', 'AppleMyungjo', serif;
+  --f-body:'Nanum Myeongjo', 'AppleMyungjo', serif;
+  --f-latin:'MedievalSharp', 'Nanum Myeongjo', serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{
+  margin:0; color:var(--ink); font-family:var(--f-body); font-size:16px;
+  background-color:var(--ground);
+  background-image:
+    radial-gradient(circle at 8% 12%, var(--ground-dot1) 0 60px, transparent 61px),
+    radial-gradient(circle at 92% 20%, var(--ground-dot2) 0 80px, transparent 81px),
+    radial-gradient(circle at 85% 88%, var(--ground-dot3) 0 70px, transparent 71px),
+    radial-gradient(circle at 12% 85%, var(--ground-dot2) 0 40px, transparent 41px);
+  -webkit-tap-highlight-color:transparent;
+}
+:root[data-gtheme="medieval"] body{
+  background-image:
+    radial-gradient(ellipse at 50% 40%, rgba(201,152,47,.10), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgba(0,0,0,.6), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 2px, transparent 2px 60px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 2px, transparent 2px 30px);
+}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+
+/* ---------- 설정 화면 ---------- */
+#setup{min-height:100%; box-sizing:border-box; padding-block:24px 40px; padding-inline:16px; display:flex; justify-content:center}
+.setup-card{width:100%; max-width:760px; display:flex; flex-direction:column; gap:22px}
+.logo{text-align:center; display:flex; flex-direction:column; gap:4px; align-items:center}
+.logo h1{margin:0; font-family:var(--f-display); font-size:clamp(52px,12vw,88px); line-height:1; letter-spacing:.02em; text-wrap:balance}
+.logo h1 span{display:inline-block}
+:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(1){color:#FF5A5F; transform:rotate(-6deg)}
+:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(2){color:#3D7BFF; transform:translateY(-6px)}
+:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(3){color:#3BB273; transform:rotate(5deg)}
+:root:not([data-gtheme="medieval"]) .logo h1{text-shadow:0 4px 0 rgba(43,35,80,.18)}
+:root[data-gtheme="medieval"] .logo h1{color:var(--accent); font-weight:800; text-shadow:0 2px 0 #000, 0 0 24px rgba(201,152,47,.35)}
+.logo .sub{font-family:var(--f-latin); font-size:15px; letter-spacing:.3em; text-transform:uppercase; color:var(--muted)}
+.logo .rule{font-size:15px; color:var(--muted); max-width:52ch; line-height:1.5}
+
+.sec{display:flex; flex-direction:column; gap:10px}
+.sec h2{margin:0; font-family:var(--f-display); font-size:18px; letter-spacing:.04em; font-weight:800}
+.chips{display:flex; flex-wrap:wrap; gap:10px}
+.chip{
+  border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink);
+  border-radius:999px; padding:10px 18px; font-size:17px; min-height:48px;
+  box-shadow:0 3px 0 var(--panel-edge); transition:transform .08s, background .15s;
+}
+:root[data-gtheme="medieval"] .chip{border-radius:4px; border-width:2px; box-shadow:inset 0 0 0 2px rgba(107,69,32,.25); font-weight:700}
+.chip:active{transform:translateY(2px)}
+.chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--panel-edge)}
+.chip small{display:block; font-size:12px; opacity:.8}
+
+.theme-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.theme-card{border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px; text-align:left; min-width:0}
+.theme-card[aria-pressed="true"]{outline:4px solid var(--accent); outline-offset:3px}
+.theme-card b{font-size:18px}
+.theme-card span{font-size:13px; opacity:.75}
+.mini{display:grid; grid-template-columns:repeat(5,1fr); gap:3px; padding:6px; border-radius:10px; aspect-ratio:5/2.2; max-width:100%}
+.mini i{border-radius:4px}
+.mini.kids{background:#FF6B6B}
+.mini.kids i:nth-child(4n+1){background:#FFE0E8}.mini.kids i:nth-child(4n+2){background:#DCF4FF}.mini.kids i:nth-child(4n+3){background:#FFF3C2}.mini.kids i:nth-child(4n){background:#E0F8D6}
+.mini.med{background:#4A2E17; box-shadow:inset 0 0 0 2px #C9982F; border-radius:4px}
+.mini.med i{background:linear-gradient(#8A806D,#6F6656); border-radius:2px}
+
+.players{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.pcard{border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:var(--radius); padding:14px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.pcard .ph{display:flex; align-items:center; gap:10px}
+.pcard .ph b{font-size:18px}
+.pcard .ph small{font-size:13px; opacity:.7}
+.glyphs{display:grid; grid-template-columns:repeat(6,1fr); gap:6px}
+.glyph{aspect-ratio:1; border:2px solid transparent; background:rgba(0,0,0,.05); border-radius:12px; font-size:22px; display:grid; place-items:center; padding:0; font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',serif}
+.glyph[aria-pressed="true"]{border-color:var(--panel-edge); background:rgba(0,0,0,.12)}
+.swatches{display:flex; flex-wrap:wrap; gap:8px}
+.sw{width:34px; height:34px; border-radius:50%; border:3px solid rgba(0,0,0,.15); padding:0}
+.sw[aria-pressed="true"]{border-color:var(--panel-ink); box-shadow:0 0 0 3px var(--panel)}
+.start{
+  align-self:center; font-family:var(--f-display); font-size:26px; padding:16px 48px; min-height:64px;
+  background:var(--accent); color:var(--accent-ink); border:3px solid var(--panel-edge); border-radius:999px;
+  box-shadow:0 5px 0 var(--panel-edge);
+}
+:root[data-gtheme="medieval"] .start{border-radius:4px; font-weight:800; letter-spacing:.1em; box-shadow:0 0 0 2px #000, 0 6px 18px rgba(201,152,47,.3)}
+.start:active{transform:translateY(3px)}
+.snd-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+
+/* ---------- 게임 화면 ---------- */
+#game{height:100%; display:flex; flex-direction:column; box-sizing:border-box; padding-inline:12px; padding-block:8px; gap:8px}
+.gbar{display:flex; align-items:center; gap:8px; justify-content:space-between}
+.gbtn{border:2px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:999px; padding:6px 12px; font-size:14px; min-height:38px; white-space:nowrap}
+:root[data-gtheme="medieval"] .gbtn{border-radius:4px; font-weight:700}
+.gbtn[aria-pressed="false"]{opacity:.5; text-decoration:line-through}
+.turnbanner{flex:1; min-width:0; text-align:center; font-family:var(--f-display); font-size:clamp(16px,3.4vw,24px); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.turnbanner .dot{display:inline-block; width:.8em; height:.8em; border-radius:50%; vertical-align:-.05em; margin-right:.3em; border:2px solid var(--ink)}
+.snd{display:flex; gap:6px}
+
+.stage{flex:1; min-height:0; display:grid; grid-template-columns:var(--pw,150px) var(--bs,400px) var(--pw,150px); gap:var(--sg,16px); justify-content:center; align-items:center}
+
+.panel{
+  background:var(--panel); color:var(--panel-ink); border:3px solid var(--panel-edge); border-radius:var(--radius);
+  padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+  transition:transform .2s, box-shadow .2s, opacity .2s; opacity:.72; min-width:0; box-sizing:border-box
+}
+.panel.active{opacity:1; transform:scale(1.03); box-shadow:0 0 0 4px var(--pc), 0 8px 0 rgba(0,0,0,.12)}
+:root[data-gtheme="medieval"] .panel{border-width:2px; box-shadow:inset 0 0 0 3px rgba(107,69,32,.3)}
+:root[data-gtheme="medieval"] .panel.active{box-shadow:inset 0 0 0 3px rgba(107,69,32,.3), 0 0 0 3px var(--pc), 0 0 28px rgba(201,152,47,.45)}
+.pv{width:56px; height:56px}
+.pname{font-size:17px; font-weight:800; line-height:1.2; word-break:keep-all}
+.goalhint{font-size:12px; opacity:.7}
+.timer{position:relative; width:64px; height:64px}
+.timer svg{width:100%; height:100%; transform:rotate(-90deg)}
+.timer .trk{fill:none; stroke:rgba(0,0,0,.1); stroke-width:5}
+.timer .arc{fill:none; stroke:var(--pc); stroke-width:5; stroke-linecap:round; stroke-dasharray:125.66; transition:stroke-dashoffset .12s linear}
+.timer .tnum{position:absolute; inset:0; display:grid; place-items:center; font-size:20px; font-weight:800; font-variant-numeric:tabular-nums}
+.timer.warn .tnum{color:var(--danger); animation:pulse .5s infinite alternate}
+.timer.warn .arc{stroke:var(--danger)}
+.timer.idle .tnum{font-size:14px; opacity:.6}
+@keyframes pulse{to{transform:scale(1.18)}}
+.lbl{font-size:12px; opacity:.75; display:flex; gap:4px; align-items:baseline}
+.lbl b{font-size:18px; opacity:1; font-variant-numeric:tabular-nums}
+.wbars{display:grid; grid-template-columns:repeat(5,1fr); gap:3px; width:100%; max-width:90px}
+.wbars i{height:7px; border-radius:4px; background:var(--pc); border:1px solid rgba(0,0,0,.25)}
+.wbars i.used{background:transparent; opacity:.35}
+.strikes{display:flex; gap:5px}
+.strikes i{width:18px; height:18px; border-radius:50%; border:2px solid rgba(0,0,0,.3); display:grid; place-items:center; font-style:normal; font-size:12px; line-height:1}
+.strikes i.on{background:var(--danger); border-color:var(--danger); color:#fff}
+.stage.compact .goalhint,.stage.compact .lbl span{display:none}
+.stage.compact .panel{padding:8px 4px; gap:6px}
+.stage.compact .pv{width:42px; height:42px}
+.stage.compact .pname{font-size:13px}
+.stage.compact .timer{width:50px; height:50px}
+.stage.compact .timer .tnum{font-size:16px}
+.stage.compact .strikes i{width:14px; height:14px; font-size:10px}
+
+/* 보드 */
+.board{position:relative; width:var(--bs); height:var(--bs); touch-action:none; user-select:none; -webkit-user-select:none}
+.frame{position:absolute; inset:calc(var(--bs) * -0.035); background:var(--frame); border-radius:calc(var(--radius) + 6px); border:3px solid var(--frame-edge); box-shadow:0 8px 0 rgba(43,35,80,.25)}
+:root[data-gtheme="medieval"] .frame{
+  border-radius:6px; border-width:3px;
+  background:linear-gradient(135deg,#5A381C,#3A2310 50%,#5A381C);
+  box-shadow:inset 0 0 0 5px #2A170A, inset 0 0 0 7px rgba(201,152,47,.6), 0 14px 40px rgba(0,0,0,.6);
+}
+.cell{position:absolute; width:9.0909%; height:9.0909%; border-radius:var(--cell-radius); box-shadow:inset 0 -3px 0 var(--cell-edge)}
+.cell.c0{background:var(--cellA)}.cell.c1{background:var(--cellB)}.cell.c2{background:var(--cellC)}.cell.c3{background:var(--cellD)}
+:root[data-gtheme="medieval"] .cell{background-image:linear-gradient(160deg,rgba(255,255,255,.12),rgba(0,0,0,.18)); box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.08)}
+.cell.goal{box-shadow:inset 0 0 0 calc(var(--bs) * .007) var(--gc), inset 0 -3px 0 var(--cell-edge)}
+.cell.goal::before{content:""; position:absolute; inset:0; border-radius:inherit; background:var(--gc); opacity:.22}
+.cell.can{cursor:pointer}
+.cell.can::after{content:""; position:absolute; left:50%; top:50%; width:34%; height:34%; transform:translate(-50%,-50%); border-radius:50%; background:var(--hc); opacity:.75; animation:bob 1s ease-in-out infinite alternate; border:2px solid rgba(0,0,0,.25)}
+@keyframes bob{to{transform:translate(-50%,-50%) scale(1.25); opacity:.95}}
+.wall{position:absolute; border-radius:999px; border:2px solid var(--ink); box-sizing:border-box; pointer-events:none; z-index:3;
+  background:repeating-linear-gradient(45deg, var(--wc) 0 8px, rgba(255,255,255,.55) 8px 12px); animation:drop .28s cubic-bezier(.3,1.6,.5,1)}
+:root[data-gtheme="medieval"] .wall{border-radius:2px; border:1.5px solid #1D1208; background:linear-gradient(var(--wd),#8A5A2B 20%,#6B4220 55%,#4A2C14); box-shadow:0 3px 6px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,220,150,.15)}
+:root[data-gtheme="medieval"] .wall.V{background:linear-gradient(90deg,#8A5A2B,#6B4220 55%,#4A2C14)}
+:root[data-gtheme="medieval"] .wall::after{content:""; position:absolute; inset:28%; border-left:2px solid var(--wc); border-right:2px solid var(--wc); opacity:.9}
+.wall.ghost{opacity:.55; animation:none; z-index:4}
+.wall.ghost.bad{--wc:var(--danger); opacity:.7; border-style:dashed}
+:root[data-gtheme="medieval"] .wall.ghost.bad{background:var(--danger)}
+@keyframes drop{from{transform:scale(1.6); opacity:0}}
+.pawn{
+  position:absolute; width:7.6%; height:7.6%; border-radius:50%; transform:translate(-50%,-50%); z-index:5;
+  display:grid; place-items:center; pointer-events:none;
+  transition:left .22s cubic-bezier(.3,1.4,.6,1), top .22s cubic-bezier(.3,1.4,.6,1);
+}
+.token{width:100%; height:100%; border-radius:50%; display:grid; place-items:center; background:var(--pc);
+  border:3px solid var(--ink); box-shadow:0 4px 0 rgba(0,0,0,.28); box-sizing:border-box; line-height:1; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.45);
+  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Segoe UI Symbol',serif}
+:root[data-gtheme="medieval"] .token{border:2px solid #C9982F; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.45), transparent 45%), var(--pc); box-shadow:0 0 0 2px #1D1208, 0 5px 10px rgba(0,0,0,.6)}
+.pawn.hop .token{animation:hop .3s}
+@keyframes hop{50%{transform:translateY(-35%) scale(1.1)}}
+.pawn.me .token{animation:glow 1.2s ease-in-out infinite alternate}
+@keyframes glow{to{box-shadow:0 0 0 5px var(--pc), 0 4px 0 rgba(0,0,0,.28)}}
+
+.controls{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px}
+.seg{display:flex; border:3px solid var(--panel-edge); border-radius:999px; overflow:hidden; background:var(--panel)}
+:root[data-gtheme="medieval"] .seg{border-radius:4px; border-width:2px}
+.seg button{border:0; background:transparent; color:var(--panel-ink); padding:10px 16px; font-size:16px; min-height:46px}
+.seg button[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.seg button:disabled{opacity:.4; cursor:not-allowed}
+.rot{border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:999px; padding:8px 14px; min-height:46px; font-size:16px; display:flex; align-items:center; gap:8px}
+:root[data-gtheme="medieval"] .rot{border-radius:4px; border-width:2px}
+.rot .bar{display:inline-block; background:var(--accent); border:2px solid var(--panel-ink); border-radius:4px; transition:all .2s}
+.rot .bar.H{width:26px; height:8px}.rot .bar.V{width:8px; height:26px}
+.hint{font-size:14px; color:var(--muted); flex-basis:100%; text-align:center}
+
+.toast{position:fixed; left:50%; top:22%; transform:translate(-50%,-20px); background:var(--danger); color:#fff; padding:12px 22px; border-radius:999px; font-size:20px; font-family:var(--f-display); font-weight:800; opacity:0; pointer-events:none; transition:all .25s; z-index:30; border:3px solid rgba(0,0,0,.25); white-space:nowrap}
+.toast.show{opacity:1; transform:translate(-50%,0)}
+.toast.info{background:var(--accent); color:var(--accent-ink)}
+
+.overlay{position:fixed; inset:0; background:rgba(20,15,35,.55); display:grid; place-items:center; z-index:40; padding:16px}
+.dialog{background:var(--panel); color:var(--panel-ink); border:4px solid var(--panel-edge); border-radius:calc(var(--radius) + 6px); padding:24px 22px; max-width:380px; width:100%; box-sizing:border-box; text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center; animation:pop .35s cubic-bezier(.3,1.5,.5,1)}
+:root[data-gtheme="medieval"] .dialog{border-radius:6px; box-shadow:inset 0 0 0 4px rgba(107,69,32,.35), 0 20px 60px #000}
+@keyframes pop{from{transform:scale(.7); opacity:0}}
+.dialog h3{margin:0; font-family:var(--f-display); font-size:30px; font-weight:800; text-wrap:balance}
+.dialog p{margin:0; font-size:16px; line-height:1.5; opacity:.85}
+.dialog .big{width:96px; height:96px}
+.dialog .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.stats{display:flex; gap:18px; font-size:14px}
+.stats b{display:block; font-size:22px; font-variant-numeric:tabular-nums}
+.confetti{position:fixed; inset:0; pointer-events:none; z-index:39; overflow:hidden}
+.confetti i{position:absolute; top:-20px; width:10px; height:16px; border-radius:3px; animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* ---------- 가로모드 ---------- */
+.land-btn{background:var(--accent); color:var(--accent-ink)}
+html.is-land #game{padding-block:6px; padding-inline:10px; gap:6px}
+html.is-land .gbar .controls{flex-wrap:nowrap; gap:6px; flex:none}
+html.is-land .hint{display:none}
+html.is-land .turnbanner{font-size:18px}
+html.is-land .seg{border-width:2px}
+html.is-land .seg button{min-height:36px; padding:5px 12px; font-size:14px}
+html.is-land .rot{min-height:36px; padding:4px 10px; font-size:14px; border-width:2px}
+html.is-land .rot .bar.H{width:20px; height:6px} html.is-land .rot .bar.V{width:6px; height:20px}
+html.is-land .gbtn{min-height:36px; padding:4px 10px; font-size:13px}
+/* 폰을 세로로 든 상태에서도 가로 화면처럼 보이도록 게임 화면을 90도 돌린다 */
+html.is-rotated #game{
+  position:fixed; top:0; left:0; z-index:10;
+  width:var(--vh,100vh); height:var(--vw,100vw);
+  transform-origin:0 0; transform:rotate(90deg) translateY(-100%);
+  background:var(--ground);
+}
+html.is-rotated body{overflow:hidden}
+
+@media (max-width:560px){
+  .players,.theme-row{grid-template-columns:1fr}
+  .seg button{padding:8px 12px; font-size:15px}
+  .gbtn{padding:5px 9px; font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important; transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ===== 설정 화면 ===== -->
+<main id="setup">
+  <div class="setup-card">
+    <div class="logo">
+      <h1 aria-label="쿼리도"><span>쿼</span><span>리</span><span>도</span></h1>
+      <div class="sub">Quoridor</div>
+      <div class="rule">내 말을 반대편 끝까지 먼저 보내면 이겨요. 한 턴에 말을 한 칸 옮기거나, 벽을 하나 세워 상대 길을 막을 수 있어요. 단, 길을 완전히 막으면 안 돼요!</div>
+    </div>
+
+    <section class="sec">
+      <h2>게임 방법</h2>
+      <div class="chips" id="modeChips">
+        <button class="chip" data-mode="solo" aria-pressed="true">혼자하기<small>컴퓨터와 대결</small></button>
+        <button class="chip" data-mode="duo" aria-pressed="false">둘이하기<small>한 화면에서 번갈아</small></button>
+      </div>
+      <div class="chips" id="levelChips">
+        <button class="chip" data-level="easy" aria-pressed="false">쉬움</button>
+        <button class="chip" data-level="normal" aria-pressed="true">보통</button>
+        <button class="chip" data-level="hard" aria-pressed="false">어려움</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>배경</h2>
+      <div class="theme-row">
+        <button class="theme-card" data-theme="kids" aria-pressed="true">
+          <div class="mini kids"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>알록달록 놀이터</b><span>밝고 귀여운 색깔 보드</span>
+        </button>
+        <button class="theme-card" data-theme="medieval" aria-pressed="false">
+          <div class="mini med"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>중세 성채</b><span>돌바닥과 나무 방벽</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>한 턴 시간 <span style="font-size:14px;opacity:.7;font-weight:400">· 시간 초과 3번이면 패배</span></h2>
+      <div class="chips" id="timeChips">
+        <button class="chip" data-sec="20" aria-pressed="false">20초</button>
+        <button class="chip" data-sec="30" aria-pressed="true">30초</button>
+        <button class="chip" data-sec="45" aria-pressed="false">45초</button>
+        <button class="chip" data-sec="60" aria-pressed="false">60초</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>말 고르기</h2>
+      <div class="players">
+        <div class="pcard" data-p="0">
+          <div class="ph"><div class="pv" id="prev0"></div><div><b>플레이어 1</b><br><small>왼쪽에서 출발 → 오른쪽 끝</small></div></div>
+          <div class="glyphs"></div><div class="swatches"></div>
+        </div>
+        <div class="pcard" data-p="1">
+          <div class="ph"><div class="pv" id="prev1"></div><div><b id="p2title">컴퓨터</b><br><small>오른쪽에서 출발 → 왼쪽 끝</small></div></div>
+          <div class="glyphs"></div><div class="swatches"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="snd-row">
+      <button class="gbtn" id="sMusic" aria-pressed="true">♪ 배경음악</button>
+      <button class="gbtn" id="sSfx" aria-pressed="true">효과음</button>
+    </div>
+    <button class="start" id="btnStart">게임 시작!</button>
+  </div>
+</main>
+
+<!-- ===== 게임 화면 ===== -->
+<div id="game" hidden>
+  <header class="gbar">
+    <button class="gbtn" id="btnHome">처음으로</button>
+    <div class="turnbanner" id="turnBanner"></div>
+    <div class="snd">
+      <button class="gbtn" id="gMusic" aria-pressed="true">♪</button>
+      <button class="gbtn" id="gSfx" aria-pressed="true">효과음</button>
+      <button class="gbtn land-btn" id="btnLand">가로모드</button>
+    </div>
+  </header>
+  <div class="stage" id="stage">
+    <aside class="panel" id="panel0"></aside>
+    <div class="board" id="board"><div class="frame"></div></div>
+    <aside class="panel" id="panel1"></aside>
+  </div>
+  <div class="controls">
+    <div class="seg">
+      <button id="btnMove" aria-pressed="true">말 이동</button>
+      <button id="btnWall" aria-pressed="false">벽 세우기</button>
+    </div>
+    <button class="rot" id="btnRot"><span class="bar H" id="rotBar"></span><span id="rotTxt">가로 벽</span></button>
+    <div class="hint" id="hint"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="overlay" id="overlay" hidden><div class="dialog" id="dialog"></div></div>
+  <div class="confetti" id="confetti"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const PIECES = ['🦊','🐰','🐻','🐸','🐯','🐧','🦄','🐲','♞','♜','♚','♛'];
+const COLORS = ['#FF5A5F','#FF9F1C','#FFD23F','#3BB273','#3D7BFF','#9B5DE5','#F15BB5','#5C4033'];
+const LEVEL_NAME = {easy:'쉬움', normal:'보통', hard:'어려움'};
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('quoridor:'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('quoridor:'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+const S = Object.assign({
+  mode:'solo', level:'normal', theme:'kids', turnSec:30, music:true, sfx:true,
+  players:[{piece:'🦊', color:'#FF9F1C'}, {piece:'🐲', color:'#3D7BFF'}]
+}, store.get('settings', {}));
+
+function saveSettings(){ store.set('settings', S); }
+function applyTheme(){ document.documentElement.dataset.gtheme = S.theme; }
+applyTheme();
+
+/* ================= 소리 (Web Audio 합성) ================= */
+let ac = null, master, bgmGain, sfxGain, noiseBuf;
+function ensureAudio(){
+  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  ac = new AC();
+  master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+  bgmGain = ac.createGain(); bgmGain.gain.value = 0.28; bgmGain.connect(master);
+  sfxGain = ac.createGain(); sfxGain.gain.value = 0.7; sfxGain.connect(master);
+  noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+  const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+}
+const mtof = n => 440*Math.pow(2,(n-69)/12);
+function env(g, t, a, peak, dec){ g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+dec); }
+function tone(dest, f, t, {type='sine', dur=0.2, a=0.005, vol=0.3, to=null, lp=null}={}){
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f,t);
+  if (to) o.frequency.exponentialRampToValueAtTime(to, t+dur);
+  env(g,t,a,vol,dur); let n = o;
+  if (lp){ const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=lp; o.connect(fl); n = fl; }
+  n.connect(g); g.connect(dest); o.start(t); o.stop(t+a+dur+0.05);
+}
+function noise(dest, t, {dur=0.1, vol=0.2, type='lowpass', f=1000, q=1}={}){
+  const s = ac.createBufferSource(); s.buffer = noiseBuf;
+  const fl = ac.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+  const g = ac.createGain(); env(g,t,0.003,vol,dur);
+  s.connect(fl); fl.connect(g); g.connect(dest); s.start(t, Math.random()*0.5); s.stop(t+dur+0.05);
+}
+// 류트 같은 뜯는 소리
+function lute(dest, n, t, vol=0.2, dec=0.9){
+  const f = mtof(n);
+  const o1 = ac.createOscillator(); o1.type='triangle'; o1.frequency.value=f;
+  const o2 = ac.createOscillator(); o2.type='sawtooth'; o2.frequency.value=f*1.003;
+  const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.Q.value=2;
+  fl.frequency.setValueAtTime(3200,t); fl.frequency.exponentialRampToValueAtTime(500,t+dec*0.6);
+  const g2 = ac.createGain(); g2.gain.value = 0.35;
+  const g = ac.createGain(); env(g,t,0.004,vol,dec);
+  o1.connect(fl); o2.connect(g2); g2.connect(fl); fl.connect(g); g.connect(dest);
+  o1.start(t); o2.start(t); o1.stop(t+dec+0.1); o2.stop(t+dec+0.1);
+}
+// 나팔 같은 소리
+function brass(dest, n, t, dur=0.3, vol=0.25){
+  const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n);
+  const fl = ac.createBiquadFilter(); fl.type='lowpass';
+  fl.frequency.setValueAtTime(400,t); fl.frequency.linearRampToValueAtTime(2200,t+0.06); fl.frequency.linearRampToValueAtTime(1200,t+dur);
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.04);
+  g.gain.setValueAtTime(vol,t+dur*0.7); g.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.12);
+  o.connect(fl); fl.connect(g); g.connect(dest); o.start(t); o.stop(t+dur+0.2);
+}
+
+/* --- 중세풍 배경음악: D 도리안 6/8 춤곡 (류트 + 저음 + 프레임드럼 + 탬버린 + 드론) --- */
+const _ = 0;
+const MEL = [
+  62,_,65, 69,_,67,  65,64,62, 64,_,57,  62,_,65, 69,_,72,  71,_,69, 67,_,_,
+  69,_,67, 65,_,64,  62,64,65, 67,_,65,  64,_,62, 60,_,64,  62,_,_, 62,_,_,
+  69,_,72, 74,_,72,  71,_,69, 67,_,_,    65,_,67, 69,_,67,  65,64,62, 64,_,_,
+  69,_,72, 74,_,76,  77,_,76, 74,_,72,  71,69,67, 69,_,64,  62,_,_, 62,_,_
+];
+const BASS = [38,36,38,43,41,38,36,38, 45,43,41,45,45,41,43,38];
+const STEP = 0.2;
+const bgm = {playing:false, step:0, next:0, timer:null};
+function bgmStep(i, t){
+  const bar = Math.floor(i/6), s = i%6;
+  const m = MEL[i]; if (m) lute(bgmGain, m, t, 0.2, 0.85);
+  const b = BASS[bar];
+  if (s===0){ lute(bgmGain, b, t, 0.22, 1.1); drum(t, 0.5); }
+  if (s===3){ lute(bgmGain, b+7, t, 0.13, 0.6); drum(t, 0.28); }
+  if (s===5) noise(bgmGain, t, {dur:0.07, vol:0.06, type:'highpass', f:6500});
+  if (s===2 && bar%2===1) noise(bgmGain, t, {dur:0.05, vol:0.04, type:'highpass', f:7000});
+  if (s===0 && bar%4===0){ // 낮은 드론 (D + A)
+    [50,57].forEach(n => { const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value=mtof(n);
+      const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=380;
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.05,t+0.8);
+      g.gain.setValueAtTime(0.05,t+STEP*24-0.8); g.gain.linearRampToValueAtTime(0.0001,t+STEP*24);
+      o.connect(fl); fl.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+STEP*24+0.05); });
+  }
+}
+function drum(t, v){ tone(bgmGain, 120, t, {dur:0.22, vol:v, to:50}); noise(bgmGain, t, {dur:0.06, vol:v*0.25, f:400}); }
+function bgmSched(){ while (bgm.next < ac.currentTime + 0.3){ bgmStep(bgm.step, bgm.next); bgm.next += STEP; bgm.step = (bgm.step+1) % MEL.length; } }
+function startBgm(){
+  if (!S.music) return; ensureAudio(); if (!ac || bgm.playing) return;
+  bgm.playing = true; bgm.step = 0; bgm.next = ac.currentTime + 0.12;
+  bgmGain.gain.cancelScheduledValues(ac.currentTime); bgmGain.gain.setValueAtTime(0.28, ac.currentTime);
+  bgm.timer = setInterval(bgmSched, 60); bgmSched();
+}
+function stopBgm(){
+  if (!bgm.playing) return; bgm.playing = false; clearInterval(bgm.timer);
+  if (ac){ const t = ac.currentTime; bgmGain.gain.setValueAtTime(bgmGain.gain.value,t); bgmGain.gain.linearRampToValueAtTime(0.0001,t+0.4); }
+}
+
+/* --- 효과음 --- */
+const SFX = {
+  click(t){ tone(sfxGain, 700, t, {type:'triangle', dur:0.06, vol:0.25, to:900}); },
+  move(t){
+    if (S.theme==='medieval'){ noise(sfxGain,t,{dur:0.08,vol:0.5,type:'bandpass',f:900,q:3}); tone(sfxGain,200,t,{type:'triangle',dur:0.12,vol:0.35,to:150}); }
+    else { tone(sfxGain,520,t,{dur:0.12,vol:0.35,to:900}); tone(sfxGain,1040,t+0.05,{type:'triangle',dur:0.08,vol:0.12}); }
+  },
+  jump(t){ tone(sfxGain,350,t,{type:'triangle',dur:0.25,vol:0.35,to:1100}); noise(sfxGain,t,{dur:0.2,vol:0.12,type:'bandpass',f:2500,q:1}); tone(sfxGain,900,t+0.22,{dur:0.1,vol:0.2,to:700}); },
+  wall(t){
+    tone(sfxGain,140,t,{dur:0.35,vol:0.6,to:45});
+    noise(sfxGain,t,{dur:0.18,vol:0.5,f:S.theme==='medieval'?600:1200});
+    if (S.theme==='medieval') noise(sfxGain,t+0.03,{dur:0.12,vol:0.25,type:'bandpass',f:1800,q:4});
+    else tone(sfxGain,660,t+0.06,{type:'square',dur:0.08,vol:0.08,to:990});
+  },
+  invalid(t){ tone(sfxGain,160,t,{type:'square',dur:0.09,vol:0.16,lp:900}); tone(sfxGain,130,t+0.12,{type:'square',dur:0.12,vol:0.16,lp:900}); },
+  tick(t, hi){ tone(sfxGain, hi?2000:1400, t, {type:'square', dur:0.03, vol:hi?0.18:0.1, lp:4000}); noise(sfxGain,t,{dur:0.02,vol:0.1,type:'highpass',f:3000}); },
+  turn(t){ lute(sfxGain, 81, t, 0.12, 0.5); lute(sfxGain, 86, t+0.09, 0.12, 0.6); },
+  timeout(t){ brass(sfxGain, 50, t, 0.35, 0.3); brass(sfxGain, 49, t+0.4, 0.6, 0.3); tone(sfxGain,90,t,{dur:0.8,vol:0.3,to:60}); },
+  start(t){ [62,66,69,74].forEach((n,i)=>brass(sfxGain,n,t+i*0.14,i===3?0.6:0.12,0.22)); drum2(t+0.56); },
+  win(t){ [67,72,76,79,76,79,84].forEach((n,i)=>brass(sfxGain,n,t+i*0.13,i===6?0.9:0.1,0.22)); [60,67,72].forEach(n=>brass(sfxGain,n,t+0.78,0.9,0.12)); drum2(t+0.78); },
+  lose(t){ [69,67,65,62].forEach((n,i)=>brass(sfxGain,n-12,t+i*0.28,i===3?0.9:0.22,0.2)); },
+  warnPlace(t){ tone(sfxGain,880,t,{type:'triangle',dur:0.07,vol:0.15}); }
+};
+function drum2(t){ tone(sfxGain,110,t,{dur:0.4,vol:0.6,to:45}); noise(sfxGain,t,{dur:0.3,vol:0.25,f:3000}); }
+function sfx(name, ...a){ if (!S.sfx) return; ensureAudio(); if (!ac) return; SFX[name](ac.currentTime+0.01, ...a); }
+
+/* ================= 설정 화면 ================= */
+function pawnHTML(p, scale){
+  const pl = S.players[p];
+  return `<div class="token" style="--pc:${pl.color};font-size:${scale}">${pl.piece}</div>`;
+}
+function renderSetup(){
+  document.querySelectorAll('#modeChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode===S.mode));
+  document.querySelectorAll('#levelChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.level===S.level));
+  $('#levelChips').hidden = S.mode !== 'solo';
+  document.querySelectorAll('.theme-card').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme===S.theme));
+  document.querySelectorAll('#timeChips .chip').forEach(b => b.setAttribute('aria-pressed', +b.dataset.sec===S.turnSec));
+  $('#p2title').textContent = S.mode==='solo' ? '컴퓨터' : '플레이어 2';
+  document.querySelectorAll('.pcard').forEach(card => {
+    const p = +card.dataset.p;
+    card.querySelectorAll('.glyph').forEach(g => g.setAttribute('aria-pressed', g.dataset.g===S.players[p].piece));
+    card.querySelectorAll('.sw').forEach(s => s.setAttribute('aria-pressed', s.dataset.c===S.players[p].color));
+    $('#prev'+p).innerHTML = pawnHTML(p, '28px');
+  });
+  $('#sMusic').setAttribute('aria-pressed', S.music);
+  $('#sSfx').setAttribute('aria-pressed', S.sfx);
+}
+document.querySelectorAll('.pcard').forEach(card => {
+  const p = +card.dataset.p;
+  card.querySelector('.glyphs').innerHTML = PIECES.map(g => `<button class="glyph" data-g="${g}" aria-label="말 ${g}">${g}</button>`).join('');
+  card.querySelector('.swatches').innerHTML = COLORS.map(c => `<button class="sw" data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('');
+  card.addEventListener('click', e => {
+    const g = e.target.closest('.glyph'), s = e.target.closest('.sw');
+    if (g){ S.players[p].piece = g.dataset.g; }
+    else if (s){ S.players[p].color = s.dataset.c; }
+    else return;
+    sfx('click'); saveSettings(); renderSetup();
+  });
+});
+$('#modeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.mode=b.dataset.mode; sfx('click'); saveSettings(); renderSetup(); });
+$('#levelChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.level=b.dataset.level; sfx('click'); saveSettings(); renderSetup(); });
+$('#timeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.turnSec=+b.dataset.sec; sfx('click'); saveSettings(); renderSetup(); });
+document.querySelector('.theme-row').addEventListener('click', e => { const b = e.target.closest('.theme-card'); if(!b) return; S.theme=b.dataset.theme; applyTheme(); sfx('click'); saveSettings(); renderSetup(); });
+function toggleMusic(){ S.music = !S.music; saveSettings(); if (S.music) startBgm(); else stopBgm(); syncSoundBtns(); }
+function toggleSfx(){ S.sfx = !S.sfx; saveSettings(); syncSoundBtns(); sfx('click'); }
+function syncSoundBtns(){ ['#sMusic','#gMusic'].forEach(id=>$(id).setAttribute('aria-pressed',S.music)); ['#sSfx','#gSfx'].forEach(id=>$(id).setAttribute('aria-pressed',S.sfx)); }
+$('#sMusic').onclick = toggleMusic; $('#gMusic').onclick = toggleMusic;
+$('#sSfx').onclick = toggleSfx; $('#gSfx').onclick = toggleSfx;
+// 첫 터치/클릭 때 음악 시작 (브라우저 정책상 사용자 입력 후에만 재생 가능)
+document.addEventListener('pointerdown', function first(){ ensureAudio(); startBgm(); document.removeEventListener('pointerdown', first); }, {once:true});
+
+/* ================= 게임 규칙 ================= */
+const N = 9;
+const GOAL = [8, 0];
+let G = null;
+
+function hasW(ws, o, x, y){ return ws.has(o+x+','+y); }
+function canStep(ws, x, y, dx, dy){
+  const nx = x+dx, ny = y+dy;
+  if (nx<0||ny<0||nx>=N||ny>=N) return false;
+  if (dy===1)  return !(hasW(ws,'H',x,y)   || hasW(ws,'H',x-1,y));
+  if (dy===-1) return !(hasW(ws,'H',x,y-1) || hasW(ws,'H',x-1,y-1));
+  if (dx===1)  return !(hasW(ws,'V',x,y)   || hasW(ws,'V',x,y-1));
+  if (dx===-1) return !(hasW(ws,'V',x-1,y) || hasW(ws,'V',x-1,y-1));
+  return false;
+}
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+function legalMoves(pos, ws, p){
+  const me = pos[p], op = pos[1-p], res = [];
+  for (const [dx,dy] of DIRS){
+    if (!canStep(ws, me.x, me.y, dx, dy)) continue;
+    const nx = me.x+dx, ny = me.y+dy;
+    if (nx===op.x && ny===op.y){
+      if (canStep(ws, nx, ny, dx, dy)) res.push({x:nx+dx, y:ny+dy, jump:true});
+      else for (const [ex,ey] of (dx ? [[0,1],[0,-1]] : [[1,0],[-1,0]]))
+        if (canStep(ws, nx, ny, ex, ey)) res.push({x:nx+ex, y:ny+ey, jump:true});
+    } else res.push({x:nx, y:ny});
+  }
+  return res;
+}
+function dist(ws, from, gx){
+  const seen = new Int8Array(81), q = [from.x*9+from.y]; seen[q[0]] = 1;
+  let head = 0, d = 0;
+  while (head < q.length){
+    let end = q.length;
+    for (; head < end; head++){
+      const c = q[head], x = (c/9)|0, y = c%9;
+      if (x === gx) return d;
+      for (const [dx,dy] of DIRS){
+        if (!canStep(ws,x,y,dx,dy)) continue;
+        const n = (x+dx)*9 + (y+dy); if (!seen[n]){ seen[n]=1; q.push(n); }
+      }
+    }
+    d++;
+  }
+  return Infinity;
+}
+function wallFits(ws, o, x, y){
+  if (x<0||y<0||x>7||y>7) return false;
+  if (hasW(ws,'H',x,y) || hasW(ws,'V',x,y)) return false;
+  if (o==='H') return !(hasW(ws,'H',x-1,y) || hasW(ws,'H',x+1,y));
+  return !(hasW(ws,'V',x,y-1) || hasW(ws,'V',x,y+1));
+}
+function wallValid(ws, pos, o, x, y){
+  if (!wallFits(ws,o,x,y)) return false;
+  const k = o+x+','+y; ws.add(k);
+  const ok = dist(ws,pos[0],GOAL[0])<Infinity && dist(ws,pos[1],GOAL[1])<Infinity;
+  ws.delete(k); return ok;
+}
+
+/* ================= 컴퓨터 ================= */
+function aiChoose(p){
+  const lvl = S.level, op = 1-p, ws = G.ws;
+  const noise = {easy:1.2, normal:0.35, hard:0.05}[lvl];
+  const moves = legalMoves(G.pos, ws, p);
+  for (const m of moves) if (m.x === GOAL[p]) return {type:'move', ...m};
+  if (lvl==='easy' && Math.random() < 0.3) return {type:'move', ...moves[(Math.random()*moves.length)|0]};
+  let best = null, bestScore = -Infinity;
+  const opD0 = dist(ws, G.pos[op], GOAL[op]);
+  for (const m of moves){
+    const myD = dist(ws, m, GOAL[p]);
+    const sc = opD0 - myD + Math.random()*noise + 0.01;
+    if (sc > bestScore){ bestScore = sc; best = {type:'move', ...m}; }
+  }
+  const useWalls = G.wallsLeft[p] > 0 && (lvl!=='easy' || opD0 <= 3 || Math.random() < 0.15);
+  if (useWalls){
+    const penalty = {easy:1.2, normal:0.7, hard:0.45}[lvl];
+    const myD0 = dist(ws, G.pos[p], GOAL[p]);
+    // 상대가 나보다 앞서거나 비슷할 때 적극적으로 막기
+    const urgency = opD0 <= myD0 ? 0 : (lvl==='hard' ? 0.4 : 0.9);
+    for (const o of ['H','V']) for (let x=0;x<8;x++) for (let y=0;y<8;y++){
+      if (!wallFits(ws,o,x,y)) continue;
+      const k = o+x+','+y; ws.add(k);
+      const opD = dist(ws, G.pos[op], GOAL[op]), myD = dist(ws, G.pos[p], GOAL[p]);
+      ws.delete(k);
+      if (opD===Infinity || myD===Infinity) continue;
+      if (opD <= opD0) continue;
+      const sc = opD - myD - penalty - urgency + Math.random()*noise;
+      if (sc > bestScore){ bestScore = sc; best = {type:'wall', o, x, y}; }
+    }
+  }
+  return best;
+}
+
+/* ================= 화면 그리기 ================= */
+const board = $('#board');
+const U = 110, CS = 10, ST = 12.5;
+const pct = v => (v/U*100)+'%';
+let cellEls = [], pawnEls = [], ghostEl = null;
+
+function buildBoard(){
+  board.querySelectorAll('.cell,.wall,.pawn').forEach(e => e.remove());
+  cellEls = [];
+  for (let y=0;y<N;y++) for (let x=0;x<N;x++){
+    const c = document.createElement('div');
+    c.className = 'cell c'+((x*3+y*2+ (x*y)%2)%4);
+    c.style.left = pct(x*ST); c.style.top = pct(y*ST);
+    if (x===GOAL[0]){ c.classList.add('goal'); c.style.setProperty('--gc', S.players[0].color); }
+    if (x===GOAL[1]){ c.classList.add('goal'); c.style.setProperty('--gc', S.players[1].color); }
+    board.appendChild(c); cellEls[x*9+y] = c;
+  }
+  pawnEls = [0,1].map(p => {
+    const e = document.createElement('div'); e.className = 'pawn';
+    e.innerHTML = `<div class="token" style="--pc:${S.players[p].color}">${S.players[p].piece}</div>`;
+    board.appendChild(e); return e;
+  });
+  ghostEl = document.createElement('div'); ghostEl.className = 'wall ghost'; ghostEl.hidden = true;
+  board.appendChild(ghostEl);
+}
+function placeWallEl(el, o, x, y){
+  if (o==='H'){ el.style.left=pct(x*ST+0.3); el.style.top=pct(y*ST+CS-0.2); el.style.width=pct(2*CS+2.5-0.6); el.style.height=pct(2.9); }
+  else { el.style.left=pct(x*ST+CS-0.2); el.style.top=pct(y*ST+0.3); el.style.width=pct(2.9); el.style.height=pct(2*CS+2.5-0.6); }
+  el.classList.toggle('H', o==='H'); el.classList.toggle('V', o==='V');
+}
+function addWallEl(w){
+  const e = document.createElement('div'); e.className = 'wall';
+  e.style.setProperty('--wc', S.players[w.p].color);
+  placeWallEl(e, w.o, w.x, w.y); board.insertBefore(e, ghostEl);
+}
+function drawPawns(hopP){
+  [0,1].forEach(p => {
+    const e = pawnEls[p], s = G.pos[p];
+    e.style.left = pct(s.x*ST+CS/2); e.style.top = pct(s.y*ST+CS/2);
+    e.classList.toggle('me', p===G.turn && !G.over && !isAI(p));
+  });
+  if (hopP != null){ const e = pawnEls[hopP]; e.classList.remove('hop'); void e.offsetWidth; e.classList.add('hop'); }
+}
+function isAI(p){ return S.mode==='solo' && p===1; }
+function pname(p){ return p===0 ? '플레이어 1' : (S.mode==='solo' ? '컴퓨터' : '플레이어 2'); }
+
+function buildPanels(){
+  [0,1].forEach(p => {
+    const el = $('#panel'+p);
+    el.style.setProperty('--pc', S.players[p].color);
+    const nm = p===1 && S.mode==='solo' ? `컴퓨터<br><small style="font-size:12px;opacity:.7">${LEVEL_NAME[S.level]}</small>` : pname(p);
+    el.innerHTML = `
+      <div class="pv">${pawnHTML(p, 'calc(1em + 10px)')}</div>
+      <div class="pname">${nm}</div>
+      <div class="goalhint">${p===0?'오른쪽 끝으로 →':'← 왼쪽 끝으로'}</div>
+      <div class="timer idle"><svg viewBox="0 0 48 48"><circle class="trk" cx="24" cy="24" r="20"/><circle class="arc" cx="24" cy="24" r="20"/></svg><span class="tnum">대기</span></div>
+      <div class="lbl"><span>남은 벽</span><b class="wcount">10</b></div>
+      <div class="wbars">${'<i></i>'.repeat(10)}</div>
+      <div class="lbl"><span>시간초과</span></div>
+      <div class="strikes"><i></i><i></i><i></i></div>`;
+  });
+}
+function updateHUD(){
+  [0,1].forEach(p => {
+    const el = $('#panel'+p);
+    el.classList.toggle('active', p===G.turn && !G.over);
+    el.querySelector('.wcount').textContent = G.wallsLeft[p];
+    el.querySelectorAll('.wbars i').forEach((b,i) => b.classList.toggle('used', i >= G.wallsLeft[p]));
+    el.querySelectorAll('.strikes i').forEach((s,i) => { const on = i < G.strikes[p]; s.classList.toggle('on', on); s.textContent = on?'✕':''; });
+  });
+  const p = G.turn;
+  $('#turnBanner').innerHTML = G.over ? '게임 끝' :
+    `<span class="dot" style="background:${S.players[p].color}"></span>${isAI(p) ? '컴퓨터가 생각 중…' : pname(p)+' 차례'}`;
+  const human = !isAI(p) && !G.over;
+  $('#btnMove').disabled = !human; $('#btnWall').disabled = !human || G.wallsLeft[p]===0;
+  if (G.wallsLeft[p]===0 && G.action==='wall') G.action = 'move';
+  $('#btnMove').setAttribute('aria-pressed', G.action==='move');
+  $('#btnWall').setAttribute('aria-pressed', G.action==='wall');
+  $('#btnRot').disabled = !human;
+  $('#rotBar').className = 'bar '+G.orient; $('#rotTxt').textContent = G.orient==='H' ? '가로 벽' : '세로 벽';
+  $('#hint').textContent = !human ? '' : G.action==='move'
+    ? '반짝이는 칸을 눌러 말을 옮겨요'
+    : (G.wallsLeft[p]===0 ? '벽을 다 썼어요' : '놓을 곳을 누르고 한 번 더 누르면 설치 · 마우스는 바로 클릭 · R키로 방향 바꾸기');
+  drawHighlights();
+}
+function drawHighlights(){
+  cellEls.forEach(c => c.classList.remove('can'));
+  if (G.over || isAI(G.turn) || G.action!=='move') return;
+  const col = S.players[G.turn].color;
+  G.legal = legalMoves(G.pos, G.ws, G.turn);
+  G.legal.forEach(m => { const c = cellEls[m.x*9+m.y]; c.classList.add('can'); c.style.setProperty('--hc', col); });
+}
+
+/* ================= 판 크기 맞추기 ================= */
+const stage = $('#stage');
+function fit(){
+  if ($('#game').hidden) return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  const compact = w < 620 || h < 330;
+  const pw = compact ? 72 : Math.min(160, Math.max(120, w*0.16));
+  const sg = compact ? 12 : 26;
+  const bs = Math.floor(Math.max(180, Math.min(w - 2*pw - 2*sg - 12, h - (land ? 16 : 24))));
+  stage.classList.toggle('compact', compact);
+  stage.style.setProperty('--pw', pw+'px'); stage.style.setProperty('--sg', sg+'px');
+  document.documentElement.style.setProperty('--bs', bs+'px');
+  pawnEls.forEach(e => e.firstElementChild.style.fontSize = (bs*0.046)+'px');
+}
+new ResizeObserver(fit).observe(stage);
+window.addEventListener('resize', applyRot);
+window.addEventListener('orientationchange', () => setTimeout(applyRot, 200));
+document.addEventListener('fullscreenchange', applyRot);
+
+/* ================= 가로모드 ================= */
+let land = false;
+const root = document.documentElement;
+function applyRot(){
+  const w = window.innerWidth, h = window.innerHeight;
+  root.style.setProperty('--vw', w+'px'); root.style.setProperty('--vh', h+'px');
+  // 가로모드인데 화면이 아직 세로면 CSS로 돌린다 (방향 고정이 된 기기는 돌리지 않음)
+  root.classList.toggle('is-rotated', land && h > w);
+  fit();
+}
+async function setLand(on){
+  land = on;
+  root.classList.toggle('is-land', on);
+  $('#btnLand').textContent = on ? '세로모드' : '가로모드';
+  const ctr = $('.controls');
+  if (on) $('.gbar').insertBefore(ctr, $('.snd'));
+  else $('#game').insertBefore(ctr, $('#toast'));
+  applyRot();
+  if (on){
+    try { if (!document.fullscreenElement && root.requestFullscreen) await root.requestFullscreen({navigationUI:'hide'}); } catch(e){}
+    try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape'); } catch(e){}
+  } else {
+    try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e){}
+    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch(e){}
+  }
+  applyRot();
+}
+$('#btnLand').onclick = () => { sfx('click'); setLand(!land); };
+
+/* ================= 턴 / 타이머 ================= */
+let tickTimer = null, aiTimer = null, lastSec = null;
+function startTurn(first){
+  clearInterval(tickTimer); clearTimeout(aiTimer);
+  G.ghost = null; ghostEl.hidden = true;
+  updateHUD(); drawPawns();
+  const p = G.turn;
+  if (!first) sfx('turn');
+  if (isAI(p)){
+    setTimer(p, null);
+    const delay = 650 + Math.random()*650;
+    aiTimer = setTimeout(() => {
+      const a = aiChoose(p);
+      if (a.type==='move') doMove(p, a); else doWall(p, a.o, a.x, a.y);
+    }, delay);
+    return;
+  }
+  G.deadline = performance.now() + S.turnSec*1000; lastSec = null;
+  tickTimer = setInterval(onTick, 100); onTick();
+}
+function setTimer(p, left){
+  [0,1].forEach(q => {
+    const t = $('#panel'+q+' .timer'), arc = t.querySelector('.arc'), num = t.querySelector('.tnum');
+    if (q !== p || left == null){
+      t.className = 'timer idle'; arc.style.strokeDashoffset = q===p ? 0 : 125.66;
+      num.textContent = q===p ? '생각 중' : '대기'; return;
+    }
+    const frac = Math.max(0, left/(S.turnSec*1000));
+    arc.style.strokeDashoffset = (125.66*(1-frac)).toFixed(2);
+    const sec = Math.ceil(left/1000);
+    num.textContent = sec;
+    t.className = 'timer' + (sec <= 5 ? ' warn' : '');
+  });
+}
+function onTick(){
+  const p = G.turn, left = G.deadline - performance.now();
+  setTimer(p, Math.max(0,left));
+  const sec = Math.ceil(left/1000);
+  if (sec !== lastSec){ lastSec = sec; if (sec <= 5 && sec > 0) sfx('tick', sec <= 3); }
+  if (left <= 0) onTimeout(p);
+}
+function onTimeout(p){
+  clearInterval(tickTimer);
+  G.strikes[p]++;
+  sfx('timeout'); updateHUD();
+  if (G.strikes[p] >= 3){ return endGame(1-p, 'timeout'); }
+  toast(`${pname(p)} 시간 초과! (${G.strikes[p]}/3)`);
+  G.turn = 1-p; G.action = 'move';
+  setTimeout(() => { if (!G.over) startTurn(); }, 500);
+}
+function afterAction(p){
+  clearInterval(tickTimer);
+  G.turns++;
+  if (G.pos[p].x === GOAL[p]) return endGame(p, 'goal');
+  G.turn = 1-p; G.action = 'move';
+  startTurn();
+}
+function doMove(p, m){
+  G.pos[p] = {x:m.x, y:m.y};
+  sfx(m.jump ? 'jump' : 'move');
+  drawPawns(p);
+  afterAction(p);
+}
+function doWall(p, o, x, y){
+  const w = {o,x,y,p}; G.ws.add(o+x+','+y); G.walls.push(w); G.wallsLeft[p]--;
+  addWallEl(w); sfx('wall');
+  afterAction(p);
+}
+
+/* ================= 입력 ================= */
+function boardPoint(e){
+  const r = board.getBoundingClientRect();
+  // 90도 돌린 화면에서는 화면 좌표를 보드 좌표로 되돌려 계산
+  if (root.classList.contains('is-rotated'))
+    return {ux:(e.clientY-r.top)/r.height*U, uy:(r.right-e.clientX)/r.width*U};
+  return {ux:(e.clientX-r.left)/r.width*U, uy:(e.clientY-r.top)/r.height*U};
+}
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function slotAt(pt){ return {x:clamp(Math.round((pt.ux-11.25)/ST),0,7), y:clamp(Math.round((pt.uy-11.25)/ST),0,7)}; }
+function showGhost(s){
+  G.ghost = {o:G.orient, x:s.x, y:s.y};
+  G.ghost.ok = wallValid(G.ws, G.pos, G.orient, s.x, s.y);
+  placeWallEl(ghostEl, G.orient, s.x, s.y);
+  ghostEl.style.setProperty('--wc', S.players[G.turn].color);
+  ghostEl.classList.toggle('bad', !G.ghost.ok); ghostEl.hidden = false;
+}
+function humanTurn(){ return G && !G.over && !isAI(G.turn) && !$('#game').hidden && $('#overlay').hidden; }
+board.addEventListener('pointermove', e => {
+  if (!humanTurn() || G.action!=='wall' || e.pointerType!=='mouse' || G.wallsLeft[G.turn]===0) return;
+  showGhost(slotAt(boardPoint(e)));
+});
+board.addEventListener('pointerleave', e => { if (e.pointerType==='mouse' && G && G.action==='wall'){ ghostEl.hidden = true; G.ghost = null; } });
+board.addEventListener('pointerdown', e => {
+  if (!humanTurn()) return;
+  e.preventDefault();
+  const pt = boardPoint(e), p = G.turn;
+  if (G.action === 'move'){
+    const cx = clamp(Math.floor(pt.ux/ST),0,8), cy = clamp(Math.floor(pt.uy/ST),0,8);
+    const m = (G.legal||[]).find(m => m.x===cx && m.y===cy);
+    if (m) doMove(p, m); else sfx('invalid');
+    return;
+  }
+  if (G.wallsLeft[p]===0){ sfx('invalid'); return; }
+  const s = slotAt(pt);
+  const same = G.ghost && G.ghost.x===s.x && G.ghost.y===s.y && G.ghost.o===G.orient;
+  if (e.pointerType==='mouse' || same){
+    if (!same) showGhost(s);
+    if (G.ghost.ok) doWall(p, G.orient, s.x, s.y);
+    else { sfx('invalid'); toast(wallFits(G.ws,G.orient,s.x,s.y) ? '길을 완전히 막을 수는 없어요' : '거기엔 벽을 놓을 수 없어요', true); }
+  } else { showGhost(s); sfx('warnPlace'); }
+});
+board.addEventListener('contextmenu', e => { e.preventDefault(); if (humanTurn()) rotate(); });
+function setAction(a){ if (!humanTurn()) return; if (a==='wall' && G.wallsLeft[G.turn]===0){ sfx('invalid'); return; } G.action = a; G.ghost=null; ghostEl.hidden = true; sfx('click'); updateHUD(); }
+function rotate(){
+  if (!humanTurn()) return;
+  G.orient = G.orient==='H' ? 'V' : 'H';
+  if (G.action !== 'wall' && G.wallsLeft[G.turn] > 0) G.action = 'wall';
+  sfx('click');
+  if (G.ghost) showGhost(G.ghost);
+  updateHUD();
+}
+$('#btnMove').onclick = () => setAction('move');
+$('#btnWall').onclick = () => setAction('wall');
+$('#btnRot').onclick = rotate;
+document.addEventListener('keydown', e => {
+  if (!humanTurn()) return;
+  if (e.key==='r' || e.key==='R'){ rotate(); }
+  else if (e.key==='w' || e.key==='W'){ setAction(G.action==='wall'?'move':'wall'); }
+});
+
+/* ================= 시작 / 끝 ================= */
+function newGame(){
+  G = { pos:[{x:0,y:4},{x:8,y:4}], ws:new Set(), walls:[], wallsLeft:[10,10], strikes:[0,0],
+        turn:0, over:false, action:'move', orient:'H', ghost:null, turns:0, legal:[] };
+  $('#setup').hidden = true; $('#game').hidden = false; $('#overlay').hidden = true;
+  $('#confetti').innerHTML = '';
+  buildBoard(); buildPanels(); fit(); drawPawns();
+  sfx('start'); startBgm();
+  setTimeout(() => startTurn(true), 250);
+}
+function endGame(winner, why){
+  G.over = true; clearInterval(tickTimer); clearTimeout(aiTimer);
+  setTimer(-1, null); updateHUD(); drawPawns();
+  const humanLost = S.mode==='solo' && winner===1;
+  sfx(humanLost ? 'lose' : 'win');
+  if (!humanLost) confetti(S.players[winner].color);
+  const reason = why==='goal'
+    ? `${pname(winner)}이(가) 먼저 반대편 끝에 도착했어요.`
+    : `${pname(1-winner)}이(가) 시간 초과를 3번 했어요.`;
+  const title = S.mode==='solo' ? (winner===0 ? '이겼어요!' : '아쉽게 졌어요') : `${pname(winner)} 승리!`;
+  setTimeout(() => openDialog(`
+    <div class="big">${pawnHTML(winner,'52px')}</div>
+    <h3>${title}</h3>
+    <p>${reason}</p>
+    <div class="stats"><div><b>${G.turns}</b>턴</div><div><b>${10-G.wallsLeft[0]}</b>P1 벽</div><div><b>${10-G.wallsLeft[1]}</b>${S.mode==='solo'?'컴퓨터':'P2'} 벽</div></div>
+    <div class="row"><button class="start" id="dAgain" style="font-size:20px;padding:12px 26px;min-height:52px">한 판 더</button>
+    <button class="gbtn" id="dSetup">설정 바꾸기</button></div>`,
+    { dAgain: () => { sfx('click'); newGame(); }, dSetup: goSetup }), 700);
+}
+function goSetup(){
+  clearInterval(tickTimer); clearTimeout(aiTimer);
+  if (G) G.over = true;
+  if (land) setLand(false);
+  $('#overlay').hidden = true; $('#game').hidden = true; $('#setup').hidden = false;
+  renderSetup(); sfx('click');
+}
+function openDialog(html, handlers){
+  $('#dialog').innerHTML = html; $('#overlay').hidden = false;
+  Object.entries(handlers).forEach(([id,fn]) => { const b = document.getElementById(id); if (b) b.onclick = fn; });
+}
+let pausedLeft = null;
+$('#btnHome').onclick = () => {
+  if (!G || G.over){ goSetup(); return; }
+  sfx('click');
+  // 확인하는 동안 시계를 멈춰 둔다
+  clearInterval(tickTimer); clearTimeout(aiTimer);
+  pausedLeft = isAI(G.turn) ? null : G.deadline - performance.now();
+  openDialog(`<h3>그만할까요?</h3><p>지금 게임은 끝나고 설정 화면으로 돌아가요.</p>
+    <div class="row"><button class="gbtn" id="dYes">그만하기</button><button class="start" id="dNo" style="font-size:20px;padding:12px 26px;min-height:52px">계속하기</button></div>`,
+    { dYes: goSetup, dNo: () => {
+        $('#overlay').hidden = true; sfx('click');
+        if (pausedLeft == null) startTurn(true);
+        else { G.deadline = performance.now() + pausedLeft; tickTimer = setInterval(onTick, 100); }
+      } });
+};
+$('#btnStart').onclick = () => { ensureAudio(); newGame(); };
+
+let toastT = null;
+function toast(msg, info){
+  const t = $('#toast'); t.textContent = msg; t.classList.toggle('info', !!info); t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1600);
+}
+function confetti(main){
+  const box = $('#confetti'); box.innerHTML = '';
+  const cols = [main, ...COLORS];
+  for (let i=0;i<70;i++){
+    const c = document.createElement('i');
+    c.style.left = (Math.random()*100)+'%'; c.style.background = cols[i%cols.length];
+    c.style.animationDuration = (1.8+Math.random()*1.8)+'s'; c.style.animationDelay = (Math.random()*0.6)+'s';
+    box.appendChild(c);
+  }
+  setTimeout(() => box.innerHTML='', 4500);
+}
+
+syncSoundBtns(); renderSetup();
+})();
+</script>
+
+</body>
+</html>
