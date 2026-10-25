@@ -17,7 +17,7 @@ img{max-width:100%}
 <title>쿼리도 대결</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Do+Hyeon&family=Press+Start+2P&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
 /* Layout: 좌(플레이어1 패널) · 가운데 9×9 보드 · 우(플레이어2 패널), 한 화면에 맞추는 대결판 */
 :root{
@@ -77,10 +77,10 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .logo{text-align:center; display:flex; flex-direction:column; gap:4px; align-items:center}
 .logo h1{margin:0; font-family:var(--f-display); font-size:clamp(52px,12vw,88px); line-height:1; letter-spacing:.02em; text-wrap:balance}
 .logo h1 span{display:inline-block}
-:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(1){color:#FF5A5F; transform:rotate(-6deg)}
-:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(2){color:#3D7BFF; transform:translateY(-6px)}
-:root:not([data-gtheme="medieval"]) .logo h1 span:nth-child(3){color:#3BB273; transform:rotate(5deg)}
-:root:not([data-gtheme="medieval"]) .logo h1{text-shadow:0 4px 0 rgba(43,35,80,.18)}
+:root[data-gtheme="kids"] .logo h1 span:nth-child(1){color:#FF5A5F; transform:rotate(-6deg)}
+:root[data-gtheme="kids"] .logo h1 span:nth-child(2){color:#3D7BFF; transform:translateY(-6px)}
+:root[data-gtheme="kids"] .logo h1 span:nth-child(3){color:#3BB273; transform:rotate(5deg)}
+:root[data-gtheme="kids"] .logo h1{text-shadow:0 4px 0 rgba(43,35,80,.18)}
 :root[data-gtheme="medieval"] .logo h1{color:var(--accent); font-weight:800; text-shadow:0 2px 0 #000, 0 0 24px rgba(201,152,47,.35)}
 .logo .sub{font-family:var(--f-latin); font-size:15px; letter-spacing:.3em; text-transform:uppercase; color:var(--muted)}
 .logo .rule{font-size:15px; color:var(--muted); max-width:52ch; line-height:1.5}
@@ -98,7 +98,7 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--panel-edge)}
 .chip small{display:block; font-size:12px; opacity:.8}
 
-.theme-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.theme-row{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
 .theme-card{border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px; text-align:left; min-width:0}
 .theme-card[aria-pressed="true"]{outline:4px solid var(--accent); outline-offset:3px}
 .theme-card b{font-size:18px}
@@ -248,10 +248,69 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .confetti i{position:absolute; top:-20px; width:10px; height:16px; border-radius:3px; animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
+/* ---------- 90s 오락실 테마 ---------- */
+:root[data-gtheme="arcade"]{
+  --ground:#0A0720; --ground-dot1:rgba(255,46,151,.18); --ground-dot2:rgba(34,229,255,.16); --ground-dot3:rgba(255,230,0,.08);
+  --ink:#E8F7FF; --muted:#8FA3D9;
+  --panel:#120F33; --panel-ink:#E8F7FF; --panel-edge:#22E5FF;
+  --frame:#0E0B26; --frame-edge:#FF2E97;
+  --cellA:#1B1F4A; --cellB:#171C42; --cellC:#1E1A4D; --cellD:#191B45;
+  --cell-edge:rgba(34,229,255,.28);
+  --accent:#FFE600; --accent-ink:#120F33;
+  --danger:#FF3B5C; --ok:#39FF7A;
+  --radius:0px; --cell-radius:6%;
+  --neon1:#22E5FF; --neon2:#FF2E97;
+  --f-display:'Press Start 2P', 'Do Hyeon', sans-serif;
+  --f-body:'Do Hyeon', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-latin:'Press Start 2P', monospace;
+  color-scheme:dark;
+}
+:root[data-gtheme="arcade"] body{
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(255,46,151,.28), transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(34,229,255,.22), transparent 45%),
+    linear-gradient(transparent 62%, rgba(255,46,151,.10) 62%, transparent 100%),
+    repeating-linear-gradient(90deg, rgba(34,229,255,.07) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(0deg, rgba(34,229,255,.07) 0 1px, transparent 1px 48px);
+}
+:root[data-gtheme="arcade"] body::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:60;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
+  box-shadow:inset 0 0 120px rgba(0,0,0,.7)}
+:root[data-gtheme="arcade"] .logo h1{color:var(--accent); font-size:clamp(40px,10vw,72px); text-shadow:4px 4px 0 var(--neon2), 8px 8px 0 var(--neon1)}
+:root[data-gtheme="arcade"] .logo .sub{color:var(--neon1); font-size:12px; margin-top:12px; letter-spacing:.2em; animation:blink 1.1s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+:root[data-gtheme="arcade"] .sec h2{color:var(--neon1); font-family:var(--f-body); font-size:20px; text-shadow:0 0 8px rgba(34,229,255,.6)}
+:root[data-gtheme="arcade"] :is(.chip,.gbtn,.seg,.rot,.theme-card,.pcard,.panel,.dialog,.start){
+  border-radius:0; border-width:2px; border-color:var(--neon1); box-shadow:0 0 0 2px #000, 0 0 12px rgba(34,229,255,.45)}
+:root[data-gtheme="arcade"] .chip[aria-pressed="true"], :root[data-gtheme="arcade"] .seg button[aria-pressed="true"]{box-shadow:0 0 16px rgba(255,230,0,.7)}
+:root[data-gtheme="arcade"] .theme-card[aria-pressed="true"]{outline-color:var(--accent)}
+:root[data-gtheme="arcade"] .start{font-size:18px; border-color:var(--accent); box-shadow:4px 4px 0 var(--neon2), 0 0 18px rgba(255,230,0,.5); animation:blink 1.4s steps(2) infinite}
+:root[data-gtheme="arcade"] .start:hover,:root[data-gtheme="arcade"] .start:focus-visible{animation:none}
+:root[data-gtheme="arcade"] .panel.active{box-shadow:0 0 0 3px var(--pc), 0 0 26px var(--pc)}
+:root[data-gtheme="arcade"] .timer .tnum{font-family:var(--f-latin); font-size:13px}
+:root[data-gtheme="arcade"] .timer.idle .tnum{font-family:var(--f-body); font-size:14px}
+:root[data-gtheme="arcade"] .lbl b{font-family:var(--f-latin); font-size:12px}
+:root[data-gtheme="arcade"] .stats b{font-family:var(--f-latin); font-size:16px}
+:root[data-gtheme="arcade"] .frame{border-radius:0; border:3px solid var(--neon2);
+  box-shadow:0 0 0 3px #000, 0 0 26px rgba(255,46,151,.7), inset 0 0 24px rgba(34,229,255,.25)}
+:root[data-gtheme="arcade"] .cell{border-radius:2px; background-image:none; box-shadow:inset 0 0 0 1px rgba(34,229,255,.35)}
+:root[data-gtheme="arcade"] .cell.goal{box-shadow:inset 0 0 0 2px var(--gc), inset 0 0 12px var(--gc)}
+:root[data-gtheme="arcade"] .wall{border-radius:0; border:2px solid #fff; background:var(--wc);
+  box-shadow:0 0 6px var(--wc), 0 0 16px var(--wc), 0 0 0 1px #000}
+:root[data-gtheme="arcade"] .wall.ghost.bad{background:var(--danger)}
+:root[data-gtheme="arcade"] .token{border:2px solid #fff; box-shadow:0 0 0 2px #000, 0 0 12px var(--pc)}
+:root[data-gtheme="arcade"] .toast{border-radius:0; font-family:var(--f-body)}
+:root[data-gtheme="arcade"] .turnbanner{text-shadow:0 0 10px rgba(34,229,255,.7)}
+.mini.arc{background:#0E0B26; border-radius:0; box-shadow:inset 0 0 0 2px #FF2E97, 0 0 10px rgba(255,46,151,.5)}
+.mini.arc i{background:#1B1F4A; border-radius:1px; box-shadow:inset 0 0 0 1px rgba(34,229,255,.6)}
+.mini.arc i:nth-child(3){background:#22E5FF}.mini.arc i:nth-child(8){background:#FF2E97}
+.music-now{font-size:15px; color:var(--muted)}
+.music-now b{color:var(--ink)}
+
 /* ---------- 전체화면 버튼 ---------- */
 .fs-btn .ico{font-size:1.1em; line-height:1}
-@media (max-width:640px){ #gFs .txt{display:none} }
-html.is-land #gFs .txt{display:none}
+@media (max-width:640px){ #gFs .txt, #gTrack .txt{display:none} }
+html.is-land #gFs .txt, html.is-land #gTrack .txt{display:none}
 /* ---------- 가로모드 ---------- */
 .land-btn{background:var(--accent); color:var(--accent-ink)}
 html.is-land #game{padding-block:6px; padding-inline:10px; gap:6px}
@@ -318,6 +377,10 @@ html.is-rotated body{overflow:hidden}
           <div class="mini med"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <b>중세 성채</b><span>돌바닥과 나무 방벽</span>
         </button>
+        <button class="theme-card" data-theme="arcade" aria-pressed="false">
+          <div class="mini arc"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>90s 오락실</b><span>네온 불빛과 8비트 화면</span>
+        </button>
       </div>
     </section>
 
@@ -332,11 +395,8 @@ html.is-rotated body{overflow:hidden}
     </section>
 
     <section class="sec">
-      <h2>배경음악 <span style="font-size:14px;opacity:.7;font-weight:400">· 누르면 미리 들어볼 수 있어요</span></h2>
-      <div class="chips" id="trackChips">
-        <button class="chip" data-track="basic" aria-pressed="true">기본<small>중세 마을 춤곡 · 약 1분 15초</small></button>
-        <button class="chip" data-track="epic" aria-pressed="false">웅장한 행진<small>나팔과 북의 출정곡 · 약 1분 15초</small></button>
-      </div>
+      <h2>배경음악</h2>
+      <div class="music-now">고른 배경에 맞는 곡으로 시작해요: <b id="mapTrack"></b><br>게임 중에는 위쪽 ♫ 버튼으로 곡을 바꿀 수 있어요.</div>
     </section>
 
     <section class="sec">
@@ -369,6 +429,7 @@ html.is-rotated body{overflow:hidden}
     <div class="turnbanner" id="turnBanner"></div>
     <div class="snd">
       <button class="gbtn" id="gMusic" aria-pressed="true">♪</button>
+      <button class="gbtn" id="gTrack"><span class="ico">♫</span> <span class="txt"></span></button>
       <button class="gbtn" id="gSfx" aria-pressed="true">효과음</button>
       <button class="gbtn fs-btn" id="gFs"><span class="ico">⛶</span> <span class="txt">전체화면</span></button>
       <button class="gbtn land-btn" id="btnLand">가로모드</button>
@@ -579,17 +640,104 @@ function epicStep(gi, t){
     if (style==='grand') brass(bgmGain, m[0]+12, t, E_STEP*m[1]*0.92, 0.06);
   }
 }
+/* --- 놀이터 동요: C장조, 마림바 선율 + 쿵짝 베이스 + 박수 + 셰이커 --- */
+const K_STEP = 0.2;
+const K_CH_A = [36,43,45,41,36,41,43,36], K_CH_B = [41,43,40,45,41,43,36,43];
+const K_TRI = {36:[60,64,67],43:[59,62,67],45:[60,64,69],41:[60,65,69],40:[59,64,67]};
+const K_MEL_A = {0:[72,1],1:[76,1],2:[79,2],4:[76,2],6:[72,2], 8:[74,2],10:[71,2],12:[74,1],13:[76,1],14:[74,2],
+  16:[72,2],18:[76,2],20:[81,3],23:[79,1], 24:[77,2],26:[76,2],28:[74,4],
+  32:[72,1],33:[76,1],34:[79,2],36:[84,2],38:[79,2], 40:[81,2],42:[77,2],44:[81,1],45:[79,1],46:[77,2],
+  48:[76,2],50:[74,2],52:[71,2],54:[74,2], 56:[72,4],60:[76,1],61:[74,1],62:[71,2]};
+const K_MEL_B = {0:[77,2],2:[81,2],4:[84,4], 8:[83,2],10:[79,2],12:[74,4],
+  16:[76,1],17:[79,1],18:[83,2],20:[79,2],22:[76,2], 24:[81,4],28:[76,4],
+  32:[77,2],34:[76,2],36:[77,2],38:[81,2], 40:[79,2],42:[77,2],44:[76,2],46:[74,2],
+  48:[72,2],50:[76,2],52:[79,2],54:[84,2], 56:[83,4],60:[79,2],62:[74,2]};
+const K_ORDER = ['A','B','A','B','A','B'];
+function marimba(n, t, vol, dec=0.4){
+  tone(bgmGain, mtof(n), t, {dur:dec, vol, a:0.003});
+  tone(bgmGain, mtof(n)*4, t, {dur:0.06, vol:vol*0.25, a:0.002});
+}
+function kidsStep(gi, t){
+  const sec = Math.floor(gi/64), i = gi%64, part = K_ORDER[sec];
+  const bar = Math.floor(i/8), s = i%8;
+  const root = (part==='A' ? K_CH_A : K_CH_B)[bar], tri = K_TRI[root];
+  const m = (part==='A' ? K_MEL_A : K_MEL_B)[i];
+  if (m){ marimba(m[0], t, 0.2, 0.25 + m[1]*0.08); if (sec>=2) tone(bgmGain, mtof(m[0]+12), t, {dur:0.5, vol:0.05}); }
+  if (s===0 || s===4){ tone(bgmGain, mtof(root), t, {type:'triangle', dur:0.28, vol:0.32}); tone(bgmGain, 140, t, {dur:0.12, vol:0.25, to:55}); }
+  if (s===2 || s===6){ tone(bgmGain, mtof(root+7), t, {type:'triangle', dur:0.2, vol:0.2}); tri.forEach(n => marimba(n, t, 0.05, 0.2));
+    noise(bgmGain, t, {dur:0.06, vol:0.13, type:'bandpass', f:1500, q:1}); noise(bgmGain, t+0.012, {dur:0.05, vol:0.1, type:'bandpass', f:1700, q:1}); }
+  noise(bgmGain, t, {dur:0.03, vol: s%2 ? 0.025 : 0.04, type:'highpass', f:8000});
+}
+
+/* --- 오락실 칩튠: A단조, 사각파 리드 + 삼각파 베이스 + 아르페지오 + 8비트 드럼 --- */
+const A_STEP = 0.125;                        // 16분음표
+const A_CH = {A:[45,41,48,43], A2:[45,41,48,43], B:[41,43,40,45], B2:[41,43,40,45], C:[38,40,41,43]};
+const A_TRI = {45:[57,60,64],41:[57,60,65],48:[55,60,64],43:[55,59,62],40:[55,59,64],38:[57,62,65]};
+const A_MEL_A = {0:[69,2],2:[72,2],4:[76,2],6:[74,1],7:[72,1],8:[74,2],10:[76,2],12:[69,4],
+  16:[69,2],18:[72,2],20:[77,2],22:[76,1],23:[74,1],24:[72,4],28:[74,2],30:[76,2],
+  32:[79,3],35:[76,1],36:[72,2],38:[76,2],40:[79,2],42:[84,2],44:[83,2],46:[79,2],
+  48:[81,2],50:[79,2],52:[74,2],54:[71,2],56:[74,6],62:[76,2]};
+const A_MEL_B = {0:[77,4],4:[76,2],6:[77,2],8:[81,4],12:[77,4],
+  16:[79,4],20:[77,2],22:[79,2],24:[83,4],28:[79,4],
+  32:[76,2],34:[79,2],36:[83,2],38:[88,2],40:[86,4],44:[83,4],
+  48:[84,2],50:[83,2],52:[81,4],56:[76,4],60:[81,4]};
+const A_ORDER = ['A','A2','B','B2','C','A','A2','B','B2'];
+function chip(n, t, dur, vol, type='square'){
+  const o = ac.createOscillator(); o.type = type; o.frequency.value = mtof(n);
+  const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value = 4200;
+  const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t+dur*0.85); g.gain.linearRampToValueAtTime(0.0001, t+dur);
+  o.connect(fl); fl.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+dur+0.02);
+}
+function arcadeStep(gi, t){
+  const sec = Math.floor(gi/64), i = gi%64, part = A_ORDER[sec];
+  const bar = Math.floor(i/16), s = i%16;
+  const root = A_CH[part][bar], tri = A_TRI[root];
+  // 베이스: 8분음표로 옥타브 왕복
+  if (s%2===0) chip(root + (s%4===2 ? 12 : 0), t, A_STEP*1.8, 0.2, 'triangle');
+  // 아르페지오 (C구간은 크게, 나머지는 작게 깔림)
+  const arpVol = part==='C' ? 0.07 : 0.025;
+  chip(tri[s%3] + 12, t, A_STEP*0.9, arpVol);
+  // 드럼
+  if (s===0 || s===8 || (s===10 && part!=='C')){ tone(bgmGain, 160, t, {dur:0.12, vol:0.45, to:40}); }
+  if (s===4 || s===12) noise(bgmGain, t, {dur:0.09, vol:0.2, type:'bandpass', f:2200, q:0.7});
+  if (s%2===0) noise(bgmGain, t, {dur:0.02, vol:0.05, type:'highpass', f:7000});
+  if (part==='C' && bar===3 && s>=8) noise(bgmGain, t, {dur:0.06, vol:0.08 + (s-8)*0.02, type:'bandpass', f:2200, q:0.7});
+  // 리드
+  if (part==='C') return;
+  const m = (part[0]==='A' ? A_MEL_A : A_MEL_B)[i];
+  if (m){
+    chip(m[0], t, A_STEP*m[1]*0.95, 0.075);
+    if (part.length===2) chip(m[0]+12, t + A_STEP*3, A_STEP*m[1]*0.9, 0.025);   // 반복 구간은 메아리
+  }
+}
+
 const TRACKS = {
+  kids:{step:K_STEP, len:64*K_ORDER.length, fn:(i,t)=>kidsStep(i,t)},
   basic:{step:STEP, len:96*B_ORDER.length, fn:(i,t)=>bgmStep(i,t)},
-  epic:{step:E_STEP, len:64*E_ORDER.length, fn:(i,t)=>epicStep(i,t)}
+  epic:{step:E_STEP, len:64*E_ORDER.length, fn:(i,t)=>epicStep(i,t)},
+  arcade:{step:A_STEP, len:64*A_ORDER.length, fn:(i,t)=>arcadeStep(i,t)}
 };
+const TRACK_ORDER = ['kids','basic','epic','arcade'];
+const TRACK_NAME = {kids:'놀이터 동요', basic:'중세 마을 춤곡', epic:'웅장한 행진', arcade:'8비트 오락실'};
+const THEME_TRACK = {kids:'kids', medieval:'basic', arcade:'arcade'};
+function playTrack(name){
+  S.track = name; saveSettings(); syncTrackUI();
+  if (!S.music) return;
+  if (bgm.playing && bgm.track === name) return;
+  if (bgm.playing) restartBgm(); else startBgm();
+}
+function syncTrackUI(){
+  const g = $('#gTrack .txt'); if (g) g.textContent = TRACK_NAME[S.track] || '';
+  const m = $('#mapTrack'); if (m) m.textContent = TRACK_NAME[THEME_TRACK[S.theme]];
+}
 function bgmSched(){
   const tr = TRACKS[bgm.track] || TRACKS.basic;
   while (bgm.next < ac.currentTime + 0.3){ tr.fn(bgm.step, bgm.next); bgm.next += tr.step; bgm.step = (bgm.step+1) % tr.len; }
 }
+let restartT = null;
 function restartBgm(){
-  stopBgm();
-  setTimeout(startBgm, 450);
+  stopBgm(); clearTimeout(restartT);
+  restartT = setTimeout(startBgm, 450);
 }
 function startBgm(){
   if (!S.music) return; ensureAudio(); if (!ac || bgm.playing) return;
@@ -606,11 +754,14 @@ function stopBgm(){
 const SFX = {
   click(t){ tone(sfxGain, 700, t, {type:'triangle', dur:0.06, vol:0.25, to:900}); },
   move(t){
+    if (S.theme==='arcade'){ achip(988,t,0.05,0.18); achip(1319,t+0.05,0.07,0.18); return; }
     if (S.theme==='medieval'){ noise(sfxGain,t,{dur:0.08,vol:0.5,type:'bandpass',f:900,q:3}); tone(sfxGain,200,t,{type:'triangle',dur:0.12,vol:0.35,to:150}); }
     else { tone(sfxGain,520,t,{dur:0.12,vol:0.35,to:900}); tone(sfxGain,1040,t+0.05,{type:'triangle',dur:0.08,vol:0.12}); }
   },
-  jump(t){ tone(sfxGain,350,t,{type:'triangle',dur:0.25,vol:0.35,to:1100}); noise(sfxGain,t,{dur:0.2,vol:0.12,type:'bandpass',f:2500,q:1}); tone(sfxGain,900,t+0.22,{dur:0.1,vol:0.2,to:700}); },
+  jump(t){ if (S.theme==='arcade'){ tone(sfxGain,300,t,{type:'square',dur:0.22,vol:0.16,to:1600,lp:5000}); achip(1568,t+0.22,0.08,0.15); return; }
+    tone(sfxGain,350,t,{type:'triangle',dur:0.25,vol:0.35,to:1100}); noise(sfxGain,t,{dur:0.2,vol:0.12,type:'bandpass',f:2500,q:1}); tone(sfxGain,900,t+0.22,{dur:0.1,vol:0.2,to:700}); },
   wall(t){
+    if (S.theme==='arcade'){ tone(sfxGain,440,t,{type:'square',dur:0.18,vol:0.18,to:110,lp:3500}); noise(sfxGain,t,{dur:0.12,vol:0.3,f:2500}); achip(220,t+0.12,0.1,0.14); return; }
     tone(sfxGain,140,t,{dur:0.35,vol:0.6,to:45});
     noise(sfxGain,t,{dur:0.18,vol:0.5,f:S.theme==='medieval'?600:1200});
     if (S.theme==='medieval') noise(sfxGain,t+0.03,{dur:0.12,vol:0.25,type:'bandpass',f:1800,q:4});
@@ -620,11 +771,15 @@ const SFX = {
   tick(t, hi){ tone(sfxGain, hi?2000:1400, t, {type:'square', dur:0.03, vol:hi?0.18:0.1, lp:4000}); noise(sfxGain,t,{dur:0.02,vol:0.1,type:'highpass',f:3000}); },
   turn(t){ lute(sfxGain, 81, t, 0.12, 0.5); lute(sfxGain, 86, t+0.09, 0.12, 0.6); },
   timeout(t){ brass(sfxGain, 50, t, 0.35, 0.3); brass(sfxGain, 49, t+0.4, 0.6, 0.3); tone(sfxGain,90,t,{dur:0.8,vol:0.3,to:60}); },
-  start(t){ [62,66,69,74].forEach((n,i)=>brass(sfxGain,n,t+i*0.14,i===3?0.6:0.12,0.22)); drum2(t+0.56); },
-  win(t){ [67,72,76,79,76,79,84].forEach((n,i)=>brass(sfxGain,n,t+i*0.13,i===6?0.9:0.1,0.22)); [60,67,72].forEach(n=>brass(sfxGain,n,t+0.78,0.9,0.12)); drum2(t+0.78); },
-  lose(t){ [69,67,65,62].forEach((n,i)=>brass(sfxGain,n-12,t+i*0.28,i===3?0.9:0.22,0.2)); },
+  start(t){ if (S.theme==='arcade'){ [60,64,67,72,76,79].forEach((n,i)=>achip(mtof(n+12),t+i*0.06,0.07,0.14)); achip(mtof(84),t+0.4,0.3,0.15); return; }
+    [62,66,69,74].forEach((n,i)=>brass(sfxGain,n,t+i*0.14,i===3?0.6:0.12,0.22)); drum2(t+0.56); },
+  win(t){ if (S.theme==='arcade'){ [72,76,79,84,79,84,88].forEach((n,i)=>achip(mtof(n),t+i*0.1,i===6?0.6:0.09,0.16)); return; }
+    [67,72,76,79,76,79,84].forEach((n,i)=>brass(sfxGain,n,t+i*0.13,i===6?0.9:0.1,0.22)); [60,67,72].forEach(n=>brass(sfxGain,n,t+0.78,0.9,0.12)); drum2(t+0.78); },
+  lose(t){ if (S.theme==='arcade'){ [72,71,70,69].forEach((n,i)=>achip(mtof(n-12),t+i*0.22,i===3?0.7:0.18,0.16)); tone(sfxGain,220,t+0.88,{type:'square',dur:0.6,vol:0.12,to:55,lp:2000}); return; }
+    [69,67,65,62].forEach((n,i)=>brass(sfxGain,n-12,t+i*0.28,i===3?0.9:0.22,0.2)); },
   warnPlace(t){ tone(sfxGain,880,t,{type:'triangle',dur:0.07,vol:0.15}); }
 };
+function achip(f, t, dur, vol){ tone(sfxGain, f, t, {type:'square', dur, vol, a:0.002, lp:5000}); }
 function drum2(t){ tone(sfxGain,110,t,{dur:0.4,vol:0.6,to:45}); noise(sfxGain,t,{dur:0.3,vol:0.25,f:3000}); }
 function sfx(name, ...a){ if (!S.sfx) return; ensureAudio(); if (!ac) return; SFX[name](ac.currentTime+0.01, ...a); }
 
@@ -639,7 +794,7 @@ function renderSetup(){
   $('#levelChips').hidden = S.mode !== 'solo';
   document.querySelectorAll('.theme-card').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme===S.theme));
   document.querySelectorAll('#timeChips .chip').forEach(b => b.setAttribute('aria-pressed', +b.dataset.sec===S.turnSec));
-  document.querySelectorAll('#trackChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.track===S.track));
+  syncTrackUI();
   $('#p2title').textContent = S.mode==='solo' ? '컴퓨터' : '플레이어 2';
   document.querySelectorAll('.pcard').forEach(card => {
     const p = +card.dataset.p;
@@ -664,15 +819,15 @@ document.querySelectorAll('.pcard').forEach(card => {
 });
 $('#modeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.mode=b.dataset.mode; sfx('click'); saveSettings(); renderSetup(); });
 $('#levelChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.level=b.dataset.level; sfx('click'); saveSettings(); renderSetup(); });
-$('#trackChips').addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if(!b) return;
-  S.track = b.dataset.track; sfx('click');
+$('#gTrack').onclick = () => {
+  ensureAudio(); sfx('click');
+  const next = TRACK_ORDER[(TRACK_ORDER.indexOf(S.track)+1) % TRACK_ORDER.length];
   if (!S.music){ S.music = true; syncSoundBtns(); }
-  saveSettings(); renderSetup(); ensureAudio();
-  if (bgm.playing) restartBgm(); else startBgm();
-});
+  playTrack(next);
+  toast('♫ ' + TRACK_NAME[next], true);
+};
 $('#timeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.turnSec=+b.dataset.sec; sfx('click'); saveSettings(); renderSetup(); });
-document.querySelector('.theme-row').addEventListener('click', e => { const b = e.target.closest('.theme-card'); if(!b) return; S.theme=b.dataset.theme; applyTheme(); sfx('click'); saveSettings(); renderSetup(); });
+document.querySelector('.theme-row').addEventListener('click', e => { const b = e.target.closest('.theme-card'); if(!b) return; S.theme=b.dataset.theme; applyTheme(); sfx('click'); saveSettings(); renderSetup(); ensureAudio(); playTrack(THEME_TRACK[S.theme]); });
 function toggleMusic(){ S.music = !S.music; saveSettings(); if (S.music) startBgm(); else stopBgm(); syncSoundBtns(); }
 function toggleSfx(){ S.sfx = !S.sfx; saveSettings(); syncSoundBtns(); sfx('click'); }
 function syncSoundBtns(){ ['#sMusic','#gMusic'].forEach(id=>$(id).setAttribute('aria-pressed',S.music)); ['#sSfx','#gSfx'].forEach(id=>$(id).setAttribute('aria-pressed',S.sfx)); }
@@ -1094,7 +1249,7 @@ function newGame(){
   $('#setup').hidden = true; $('#game').hidden = false; $('#overlay').hidden = true;
   $('#confetti').innerHTML = '';
   buildBoard(); buildPanels(); fit(); drawPawns();
-  sfx('start'); startBgm();
+  sfx('start'); playTrack(THEME_TRACK[S.theme]);
   setTimeout(() => startTurn(true), 250);
 }
 function endGame(winner, why){
@@ -1161,6 +1316,7 @@ function confetti(main){
   setTimeout(() => box.innerHTML='', 4500);
 }
 
+S.track = THEME_TRACK[S.theme] || 'kids';
 syncSoundBtns(); syncFsBtns(); renderSetup();
 })();
 </script>
