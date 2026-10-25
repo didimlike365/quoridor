@@ -1432,73 +1432,153 @@ function wallValid(ws, pos, o, x, y){
 }
 
 /* ================= 컴퓨터 =================
-   알파-베타 탐색(네가맥스)으로 몇 수 앞을 내다본다.
-   평가 = (상대 최단거리 − 내 최단거리) + 차례 이점 + 남은 벽 수 차이(벽 1개 = 0.8칸 가치)
-   후보 벽은 상대의 최단 경로를 실제로 막는 자리만 고른다. */
+   알파-베타 탐색으로 몇 수 앞을 내다본다.
+   · 평가: (상대 남은 칸 − 내 남은 칸) + 차례 이점 + 남은 벽 가치
+           + 벽 위협(내가 벽 하나로 상대 길을 얼마나 늘릴 수 있나 − 상대가 나에게 할 수 있는 만큼)
+   · 공격 벽: 상대 최단 경로 위에서 길을 실제로 늘리는 자리
+   · 수비 벽(어려움): 상대가 내 길을 크게 막을 수 있는 자리를 미리 가로질러 막아 둔다 */
 const AI_CFG = {
-  easy:   {depth:1, noise:1.2,  wallChance:0.3, cand:6,  wallW:0.8},   // 한 수만 보고, 가끔 벽
-  normal: {depth:2, noise:0.25, wallChance:1,   cand:10, wallW:0.8},   // 내 수 + 상대 대응까지
-  hard:   {depth:3, noise:0.02, wallChance:1,   cand:10, wallW:0.8}    // 내 수 → 상대 → 내 수
+  easy:   {depth:1, noise:1.2,  wallChance:0.3, cand:5,  wallW:0.8, threat:0,    defend:0},
+  normal: {depth:2, noise:0.2,  wallChance:1,   cand:10, wallW:0.8, threat:0.3,  defend:0},
+  hard:   {depth:3, noise:0.02, wallChance:1,   cand:14, wallW:0.8, threat:0.4,  defend:4}
 };
-function shortestPath(ws, from, gx){
-  const prev = new Int16Array(81).fill(-1), seen = new Uint8Array(81);
-  const start = from.x*9+from.y, q = [start]; seen[start] = 1;
-  for (let h=0; h<q.length; h++){
-    const c = q[h], x = (c/9)|0, y = c%9;
-    if (x === gx){ const path = []; let k = c; while (k !== -1){ path.push(k); k = prev[k]; } return path.reverse(); }
-    for (const [dx,dy] of DIRS){
-      if (!canStep(ws,x,y,dx,dy)) continue;
-      const n = (x+dx)*9 + (y+dy); if (!seen[n]){ seen[n]=1; prev[n]=c; q.push(n); }
+function fStep(st, x, y, dx, dy){
+  const nx = x+dx, ny = y+dy;
+  if (nx<0 || ny<0 || nx>8 || ny>8) return false;
+  const H = st.H, V = st.V;
+  if (dy===1)  return !((x<8 && H[x*9+y])   || (x>0 && H[(x-1)*9+y]));
+  if (dy===-1) return !((x<8 && H[x*9+y-1]) || (x>0 && H[(x-1)*9+y-1]));
+  if (dx===1)  return !((y<8 && V[x*9+y])   || (y>0 && V[x*9+y-1]));
+  return !((y<8 && V[(x-1)*9+y]) || (y>0 && V[(x-1)*9+y-1]));
+}
+const AQ = new Int16Array(81), APREV = new Int16Array(81), ASEEN = new Uint8Array(81);
+function fBfs(st, px, py, gx, wantPath){
+  ASEEN.fill(0); let h = 0, tl = 0; const s0 = px*9+py;
+  AQ[tl++] = s0; ASEEN[s0] = 1; APREV[s0] = -1;
+  const DD = new Uint8Array(81); DD[s0] = 0;
+  while (h < tl){
+    const c = AQ[h++], x = (c/9)|0, y = c%9;
+    if (x === gx){
+      if (!wantPath) return DD[c];
+      const path = []; let k = c; while (k !== -1){ path.push(k); k = APREV[k]; } return path.reverse();
+    }
+    for (let d=0; d<4; d++){
+      const dx = d===0?1:d===1?-1:0, dy = d===2?1:d===3?-1:0;
+      if (!fStep(st,x,y,dx,dy)) continue;
+      const n = (x+dx)*9 + (y+dy);
+      if (!ASEEN[n]){ ASEEN[n] = 1; APREV[n] = c; DD[n] = DD[c]+1; AQ[tl++] = n; }
     }
   }
-  return null;
+  return wantPath ? null : 99;
+}
+const fDist = (st, side) => fBfs(st, st.pos[side].x, st.pos[side].y, GOAL[side], false);
+function fFits(st, o, x, y){
+  if (x<0 || y<0 || x>7 || y>7) return false;
+  const i = x*9+y;
+  if (st.H[i] || st.V[i]) return false;
+  if (o==='H') return !((x>0 && st.H[i-9]) || (x<7 && st.H[i+9]));
+  return !((y>0 && st.V[i-1]) || (y<7 && st.V[i+1]));
+}
+function fPut(st, o, x, y, v){ (o==='H' ? st.H : st.V)[x*9+y] = v; }
+function fMoves(st, p){
+  const me = st.pos[p], op = st.pos[1-p], res = [];
+  for (const [dx,dy] of DIRS){
+    if (!fStep(st, me.x, me.y, dx, dy)) continue;
+    const nx = me.x+dx, ny = me.y+dy;
+    if (nx===op.x && ny===op.y){
+      if (fStep(st, nx, ny, dx, dy)) res.push({x:nx+dx, y:ny+dy});
+      else for (const [ex,ey] of (dx ? [[0,1],[0,-1]] : [[1,0],[-1,0]]))
+        if (fStep(st, nx, ny, ex, ey)) res.push({x:nx+ex, y:ny+ey});
+    } else res.push({x:nx, y:ny});
+  }
+  return res;
+}
+// 상대(target) 최단 경로를 막을 수 있는 벽 자리들
+function blockSlots(path, maxEdges){
+  const out = [];
+  for (let i=0; i+1<path.length && i<maxEdges; i++){
+    const a = path[i], b = path[i+1], ax = (a/9)|0, ay = a%9, bx = (b/9)|0, by = b%9;
+    if (ax !== bx){ const x = Math.min(ax,bx); out.push(['V',x,ay],['V',x,ay-1]); }
+    else { const y = Math.min(ay,by); out.push(['H',ax,y],['H',ax-1,y]); }
+  }
+  return out;
+}
+// attacker가 벽 하나로 상대 길을 최대 몇 칸 늘릴 수 있나 (평가용, 빠른 근사)
+function bestThreat(st, attacker, list){
+  const tg = 1-attacker, path = fBfs(st, st.pos[tg].x, st.pos[tg].y, GOAL[tg], true);
+  if (!path) return 0;
+  const base = path.length-1; let best = 0;
+  for (const [o,x,y] of blockSlots(path, 6)){
+    if (!fFits(st,o,x,y)) continue;
+    fPut(st,o,x,y,1); const d = fDist(st, tg); fPut(st,o,x,y,0);
+    if (d >= 99) continue;
+    const g = d - base;
+    if (list) list.push({o,x,y,g});
+    if (g > best) best = g;
+  }
+  return Math.min(best, 6);
 }
 function aiEval(st, side, cfg){
-  const dMe = dist(st.ws, st.pos[side], GOAL[side]), dOp = dist(st.ws, st.pos[1-side], GOAL[1-side]);
-  let v = (dOp - dMe) + 0.5 + (cfg.wallW||0.2)*(st.wl[side] - st.wl[1-side]);
-  if (st.wl[1-side] === 0 && dMe <= dOp) v += 20;      // 상대 벽이 없고 내가 앞서면 경주에서 이긴다
-  if (st.wl[side] === 0 && dOp < dMe) v -= 20;         // 내 벽이 없고 상대가 앞서면 진다
+  const op = 1-side, dMe = fDist(st, side), dOp = fDist(st, op);
+  let v = (dOp - dMe) + 0.5 + cfg.wallW*(st.wl[side] - st.wl[op]);
+  if (st.wl[op] === 0 && dMe <= dOp) v += 20;
+  if (st.wl[side] === 0 && dOp < dMe) v -= 20;
+  if (cfg.threat){
+    if (st.wl[side] > 0) v += cfg.threat * bestThreat(st, side);
+    if (st.wl[op] > 0)   v -= cfg.threat * bestThreat(st, op);
+  }
   return v;
 }
-function aiActions(st, side, cand, withWalls){
+function aiActions(st, side, cfg, withWalls){
   const op = 1-side;
-  const moves = legalMoves(st.pos, st.ws, side).map(m => ({type:'move', x:m.x, y:m.y, d:dist(st.ws, m, GOAL[side])}));
+  const moves = fMoves(st, side).map(m => {
+    const px = st.pos[side].x, py = st.pos[side].y; st.pos[side] = m;
+    const d = fDist(st, side); st.pos[side] = {x:px, y:py};
+    return {type:'move', x:m.x, y:m.y, d};
+  });
   moves.sort((a,b) => a.d - b.d);
   if (!withWalls || st.wl[side] <= 0) return moves;
-  const path = shortestPath(st.ws, st.pos[op], GOAL[op]);
-  if (!path) return moves;
-  const base = path.length - 1, seen = new Set(), walls = [];
-  const myBase = dist(st.ws, st.pos[side], GOAL[side]);
-  const tryW = (o,x,y) => {
-    const k = o+x+','+y; if (seen.has(k)) return; seen.add(k);
-    if (!wallFits(st.ws,o,x,y)) return;
-    st.ws.add(k);
-    const dOp = dist(st.ws, st.pos[op], GOAL[op]), dMe = dist(st.ws, st.pos[side], GOAL[side]);
-    st.ws.delete(k);
-    if (dOp === Infinity || dMe === Infinity) return;
-    const gain = (dOp - base) - (dMe - myBase);
-    if (dOp > base) walls.push({type:'wall', o, x, y, gain});
+  const opPath = fBfs(st, st.pos[op].x, st.pos[op].y, GOAL[op], true);
+  if (!opPath) return moves;
+  const opBase = opPath.length-1, myBase = fDist(st, side);
+  const seen = new Set(), walls = [];
+  const consider = (o, x, y, kind) => {
+    const k = o+x+','+y; if (seen.has(k) || !fFits(st,o,x,y)) return; seen.add(k);
+    fPut(st,o,x,y,1); const dOp = fDist(st, op), dMe = fDist(st, side); fPut(st,o,x,y,0);
+    if (dOp >= 99 || dMe >= 99) return;
+    const gain = (dOp - opBase) - (dMe - myBase);
+    if (kind==='atk' && dOp > opBase) walls.push({type:'wall', o, x, y, gain});
+    if (kind==='def' && dMe === myBase) walls.push({type:'wall', o, x, y, gain:0.5});
   };
-  for (let i=0; i+1<path.length && i<8; i++){
-    const a = path[i], b = path[i+1], ax = (a/9)|0, ay = a%9, bx = (b/9)|0, by = b%9;
-    if (ax !== bx){ const x = Math.min(ax,bx); tryW('V',x,ay); tryW('V',x,ay-1); }
-    else { const y = Math.min(ay,by); tryW('H',ax,y); tryW('H',ax-1,y); }
-  }
+  for (const [o,x,y] of blockSlots(opPath, 16)) consider(o,x,y,'atk');
   walls.sort((a,b) => b.gain - a.gain);
-  return moves.concat(walls.slice(0, cand));
+  const atk = walls.splice(0, cfg.cand);
+  let def = [];
+  if (cfg.defend && st.wl[op] > 0){
+    // 상대가 내 길을 크게 늘릴 수 있는 자리를 찾아, 같은 자리에 반대 방향 벽을 세워 미리 막는다
+    const th = []; bestThreat(st, op, th);
+    th.sort((a,b) => b.g - a.g);
+    const before = walls.length;
+    for (const t of th.slice(0, cfg.defend)) if (t.g >= 2){
+      const o2 = t.o==='H' ? 'V' : 'H';
+      consider(o2, t.x, t.y, 'def');
+    }
+    def = walls.slice(before);
+  }
+  return moves.concat(atk, def);
 }
 function aiApply(st, side, a){
   if (a.type==='move'){ a.px = st.pos[side].x; a.py = st.pos[side].y; st.pos[side] = {x:a.x, y:a.y}; }
-  else { st.ws.add(a.o+a.x+','+a.y); st.wl[side]--; }
+  else { fPut(st, a.o, a.x, a.y, 1); st.wl[side]--; }
 }
 function aiUndo(st, side, a){
   if (a.type==='move') st.pos[side] = {x:a.px, y:a.py};
-  else { st.ws.delete(a.o+a.x+','+a.y); st.wl[side]++; }
+  else { fPut(st, a.o, a.x, a.y, 0); st.wl[side]++; }
 }
 function aiSearch(st, side, depth, alpha, beta, cfg){
-  if (st.pos[1-side].x === GOAL[1-side]) return -1000 - depth;   // 방금 둔 상대가 도착
+  if (st.pos[1-side].x === GOAL[1-side]) return -1000 - depth;
   if (depth === 0) return aiEval(st, side, cfg);
-  const acts = aiActions(st, side, cfg.cand, true);
+  const acts = aiActions(st, side, cfg, true);
   let best = -Infinity;
   for (const a of acts){
     aiApply(st, side, a);
@@ -1510,17 +1590,21 @@ function aiSearch(st, side, depth, alpha, beta, cfg){
   }
   return best;
 }
+function aiState(state){
+  const st = {pos:[{...state.pos[0]}, {...state.pos[1]}], wl:[...state.wallsLeft], H:new Uint8Array(81), V:new Uint8Array(81)};
+  for (const k of state.ws){ const o = k[0], [x,y] = k.slice(1).split(',').map(Number); fPut(st, o, x, y, 1); }
+  return st;
+}
 function aiPick(state, p, level){
   const cfg = AI_CFG[level] || AI_CFG.normal;
-  const st = {pos:[{...state.pos[0]}, {...state.pos[1]}], ws:new Set(state.ws), wl:[...state.wallsLeft]};
-  const acts = aiActions(st, p, cfg.cand, Math.random() < cfg.wallChance);
-  for (const a of acts) if (a.type==='move' && a.x === GOAL[p]) return a;   // 바로 도착할 수 있으면 도착
+  const st = aiState(state);
+  const acts = aiActions(st, p, cfg, Math.random() < cfg.wallChance);
+  for (const a of acts) if (a.type==='move' && a.x === GOAL[p]) return a;
   let best = null, bestV = -Infinity;
   for (const a of acts){
     aiApply(st, p, a);
-    const raw = (st.pos[p].x === GOAL[p]) ? 1000 : -aiSearch(st, 1-p, cfg.depth-1, -Infinity, Infinity, cfg);
+    const raw = -aiSearch(st, 1-p, cfg.depth-1, -Infinity, Infinity, cfg);
     aiUndo(st, p, a);
-    // 승부가 이미 정해진 수는 노이즈 없이, 같은 점수면 목표에 가까워지는 이동을 우선
     const decisive = Math.abs(raw) > 500;
     const v = raw + (decisive ? 0 : Math.random()*cfg.noise) + (a.type==='move' ? -0.05*a.d : 0);
     if (v > bestV){ bestV = v; best = a; }
