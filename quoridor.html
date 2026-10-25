@@ -17,7 +17,7 @@ img{max-width:100%}
 <title>쿼리도 대결</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Do+Hyeon&family=Press+Start+2P&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&family=Gowun+Dodum&family=Dongle:wght@700&family=Orbitron:wght@700&family=Gugi&family=Yeon+Sung&family=Black+Han+Sans&family=Do+Hyeon&family=Press+Start+2P&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
 /* Layout: 좌(플레이어1 패널) · 가운데 9×9 보드 · 우(플레이어2 패널), 한 화면에 맞추는 대결판 */
 :root{
@@ -98,7 +98,7 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--panel-edge)}
 .chip small{display:block; font-size:12px; opacity:.8}
 
-.theme-row{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.theme-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px}
 .theme-card{border:3px solid var(--panel-edge); background:var(--panel); color:var(--panel-ink); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px; text-align:left; min-width:0}
 .theme-card[aria-pressed="true"]{outline:4px solid var(--accent); outline-offset:3px}
 .theme-card b{font-size:18px}
@@ -248,6 +248,245 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .confetti i{position:absolute; top:-20px; width:10px; height:16px; border-radius:3px; animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
+/* ================= 추가 배경 5종 ================= */
+/* 공통: 장식 레이어와 화면 층 */
+#fx{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+#setup, #game{position:relative; z-index:1}
+html.is-rotated #fx{display:none}
+.fx{position:absolute; display:block; will-change:transform}
+.fx.rise{top:105%; animation:fxRise linear infinite}
+.fx.fall{top:-8%; animation:fxFall linear infinite}
+.fx.tw{animation:fxTw ease-in-out infinite alternate}
+.fx.shoot{width:120px; height:2px; background:linear-gradient(90deg,#fff,transparent); border-radius:2px; animation:fxShoot linear infinite; opacity:0}
+@keyframes fxRise{to{transform:translate(var(--dx,0px), -125vh)}}
+@keyframes fxFall{to{transform:translate(var(--dx,0px), 120vh) rotate(var(--rot,0deg))}}
+@keyframes fxTw{to{opacity:.15; transform:scale(.6)}}
+@keyframes fxShoot{0%{opacity:0; transform:translate(0,0) rotate(-25deg)} 3%{opacity:1} 12%{opacity:0; transform:translate(-70vw,32vh) rotate(-25deg)} 100%{opacity:0; transform:translate(-70vw,32vh) rotate(-25deg)}}
+html[data-gtheme] .wall.ghost.bad{background:var(--danger)}
+
+/* ☕ 카페 */
+:root[data-gtheme="cafe"]{
+  --ground:#4A3426; --ink:#FFF3E2; --muted:#D9BFA0;
+  --panel:#FFF8EE; --panel-ink:#3B2618; --panel-edge:#3B2618;
+  --frame:#8B5A3C; --frame-edge:#3B2618;
+  --cellA:#F4E4CC; --cellB:#E8D0AE; --cellC:#F0DCC0; --cellD:#E3C9A5; --cell-edge:rgba(59,38,24,.2);
+  --accent:#2F7A5B; --accent-ink:#FFFFFF; --danger:#C0392B;
+  --radius:16px; --cell-radius:20%;
+  --f-display:'Gaegu', 'Gowun Dodum', cursive; --f-body:'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Gaegu', cursive;
+  color-scheme:dark;
+}
+:root[data-gtheme="cafe"] body{background-image:
+  radial-gradient(ellipse at 50% -10%, rgba(255,190,120,.4), transparent 60%),
+  repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 130px),
+  repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 44px, transparent 44px 88px)}
+:root[data-gtheme="cafe"] .logo h1{color:#FFF3E2; font-size:clamp(60px,14vw,100px); text-shadow:0 4px 0 #2F7A5B}
+:root[data-gtheme="cafe"] .frame{border-radius:26px; border:3px solid #3B2618;
+  background:repeating-linear-gradient(90deg,#8B5A3C 0 18px,#7E5135 18px 20px,#93613F 20px 44px); box-shadow:0 12px 0 rgba(0,0,0,.35)}
+:root[data-gtheme="cafe"] .cell.goal::before{opacity:.5; background:repeating-conic-gradient(#C0392B 0 25%, #fff 0 50%) 0 0/50% 50%}
+:root[data-gtheme="cafe"] .wall{border-radius:999px; border:2px solid #3B2618; background:linear-gradient(90deg, var(--wc) 0 58%, #3B2618 58% 61%, #E2B07A 61% 100%); box-shadow:0 3px 0 rgba(0,0,0,.35)}
+:root[data-gtheme="cafe"] .wall.V{background:linear-gradient(180deg, var(--wc) 0 58%, #3B2618 58% 61%, #E2B07A 61% 100%)}
+:root[data-gtheme="cafe"] .token{border-color:#3B2618; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), transparent 50%), #FFF8EE; box-shadow:0 0 0 3px var(--pc), 0 4px 0 rgba(0,0,0,.35)}
+.fx.bokeh{border-radius:50%; background:radial-gradient(circle, rgba(255,205,140,.45), rgba(255,205,140,0) 70%)}
+.mini.cafe{background:#8B5A3C; box-shadow:0 0 0 2px #3B2618}
+.mini.cafe i:nth-child(odd){background:#F4E4CC}.mini.cafe i:nth-child(even){background:#E3C9A5}
+.mini.cafe i:nth-child(5){background:repeating-conic-gradient(#C0392B 0 25%, #fff 0 50%) 0 0/50% 50%}
+
+/* 🌊 바닷속 */
+:root[data-gtheme="ocean"]{
+  --ground:#0B4F7A; --ink:#E6FBFF; --muted:#A7DDF0;
+  --panel:#EAFBFF; --panel-ink:#063047; --panel-edge:#063047;
+  --frame:#E9D7A8; --frame-edge:#063047;
+  --cellA:#2E9CC8; --cellB:#2A91BC; --cellC:#33A5D0; --cellD:#2788B3; --cell-edge:rgba(6,48,71,.3);
+  --accent:#FF8A5B; --accent-ink:#06304D; --danger:#E63946;
+  --radius:22px; --cell-radius:32%;
+  --f-display:'Dongle', 'Jua', sans-serif; --f-body:'Jua', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Dongle', sans-serif;
+  color-scheme:dark;
+}
+:root[data-gtheme="ocean"] body{background-image:
+  repeating-linear-gradient(100deg, rgba(255,255,255,.06) 0 30px, transparent 30px 110px),
+  radial-gradient(ellipse 80% 14% at 50% 100%, #E9D7A8 0 60%, transparent 61%),
+  linear-gradient(#1C8FC0, #0B4F7A 55%, #06304D)}
+:root[data-gtheme="ocean"] .logo h1{color:#fff; font-size:clamp(90px,20vw,140px); line-height:.7; text-shadow:0 5px 0 #FF8A5B}
+:root[data-gtheme="ocean"] .frame{border-radius:32px; border:3px solid #063047; box-shadow:0 0 0 6px rgba(255,255,255,.25), 0 14px 0 rgba(0,0,0,.25)}
+:root[data-gtheme="ocean"] .cell{background-image:radial-gradient(circle at 30% 25%, rgba(255,255,255,.35) 0 12%, transparent 13%)}
+:root[data-gtheme="ocean"] .wall{border-radius:999px; border:2px solid #063047;
+  background:radial-gradient(circle, rgba(255,255,255,.65) 0 3px, transparent 4px) 0 50%/14px 100% repeat-x, var(--wc)}
+:root[data-gtheme="ocean"] .wall.V{background:radial-gradient(circle, rgba(255,255,255,.65) 0 3px, transparent 4px) 50% 0/100% 14px repeat-y, var(--wc)}
+.fx.bubble{border-radius:50%; border:2px solid rgba(255,255,255,.55); background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.5) 0 18%, transparent 20%)}
+.mini.ocean{background:#E9D7A8; box-shadow:0 0 0 2px #063047}
+.mini.ocean i{background:#2E9CC8; border-radius:40%}.mini.ocean i:nth-child(7){background:#FF8A5B}
+
+/* 🚀 우주 정거장 */
+:root[data-gtheme="space"]{
+  --ground:#070B1E; --ink:#EAF0FF; --muted:#9AA6D6;
+  --panel:#11183A; --panel-ink:#EAF0FF; --panel-edge:#8E7CFF;
+  --frame:#1A2150; --frame-edge:#8E7CFF;
+  --cellA:#1E2A5E; --cellB:#1A2556; --cellC:#22306A; --cellD:#1C2860; --cell-edge:rgba(142,124,255,.3);
+  --accent:#7CF7D4; --accent-ink:#070B1E; --danger:#FF4D6D;
+  --radius:12px; --cell-radius:14%;
+  --f-display:'Orbitron', 'Black Han Sans', sans-serif; --f-body:'Do Hyeon', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Orbitron', sans-serif;
+  color-scheme:dark;
+}
+:root[data-gtheme="space"] body{background-image:
+  radial-gradient(circle at 88% 14%, #F6B26B 0 42px, rgba(246,178,107,.18) 43px 62px, transparent 63px),
+  radial-gradient(ellipse at 18% 72%, rgba(142,124,255,.28), transparent 50%),
+  radial-gradient(ellipse at 72% 85%, rgba(124,247,212,.14), transparent 45%)}
+:root[data-gtheme="space"] .logo h1{color:#7CF7D4; text-shadow:0 0 22px rgba(124,247,212,.6), 0 4px 0 #3B2E8F}
+:root[data-gtheme="space"] .logo .sub{color:#8E7CFF}
+:root[data-gtheme="space"] .frame{border-radius:16px; border:2px solid #8E7CFF; box-shadow:0 0 0 4px #070B1E, 0 0 0 6px rgba(142,124,255,.5), 0 0 40px rgba(142,124,255,.45)}
+:root[data-gtheme="space"] .cell{box-shadow:inset 0 0 0 1px rgba(142,124,255,.35), inset 0 -3px 0 rgba(0,0,0,.3)}
+:root[data-gtheme="space"] .wall{border-radius:3px; border:1px solid #fff; background:linear-gradient(var(--wc), #fff 50%, var(--wc)); box-shadow:0 0 8px var(--wc), 0 0 20px var(--wc)}
+:root[data-gtheme="space"] .wall.V{background:linear-gradient(90deg, var(--wc), #fff 50%, var(--wc))}
+:root[data-gtheme="space"] .token{border-color:#EAF0FF; box-shadow:0 0 0 2px #070B1E, 0 0 14px var(--pc)}
+:root[data-gtheme="space"] .panel.active{box-shadow:0 0 0 3px var(--pc), 0 0 24px var(--pc)}
+:root[data-gtheme="space"] .timer .tnum{font-family:var(--f-latin); font-size:16px}
+:root[data-gtheme="space"] .timer.idle .tnum{font-family:var(--f-body)}
+.fx.star{width:3px; height:3px; border-radius:50%; background:#fff; box-shadow:0 0 6px #fff}
+.mini.space{background:#1A2150; box-shadow:0 0 0 2px #8E7CFF, 0 0 10px rgba(142,124,255,.6)}
+.mini.space i{background:#1E2A5E}.mini.space i:nth-child(4){background:#7CF7D4}.mini.space i:nth-child(9){background:#F6B26B; border-radius:50%}
+
+/* 🦖 공룡 정글 */
+:root[data-gtheme="dino"]{
+  --ground:#3E6B3A; --ink:#FFF7E0; --muted:#D7E8B8;
+  --panel:#FFF4D6; --panel-ink:#2B2A1A; --panel-edge:#2B2A1A;
+  --frame:#7A5230; --frame-edge:#2B2A1A;
+  --cellA:#8DB257; --cellB:#7FA84C; --cellC:#93B95F; --cellD:#86AD51; --cell-edge:rgba(43,42,26,.3);
+  --accent:#FF7A1A; --accent-ink:#2B2A1A; --danger:#D62828;
+  --radius:14px; --cell-radius:22%;
+  --f-display:'Gugi', 'Black Han Sans', sans-serif; --f-body:'Jua', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Gugi', sans-serif;
+  color-scheme:dark;
+}
+:root[data-gtheme="dino"] body{background-image:
+  radial-gradient(circle at 82% 70%, rgba(255,122,26,.55), transparent 9%),
+  radial-gradient(ellipse 34% 32% at 82% 100%, #5B3A22 0 60%, transparent 61%),
+  radial-gradient(ellipse 40% 18% at 15% 100%, #2A4D28 0 60%, transparent 61%),
+  radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 40px, transparent 41px),
+  radial-gradient(circle at 60% 20%, rgba(0,0,0,.08) 0 60px, transparent 61px)}
+:root[data-gtheme="dino"] .logo h1{color:#FFB03A; text-shadow:0 5px 0 #5B3A22, 0 9px 0 rgba(0,0,0,.25)}
+:root[data-gtheme="dino"] .frame{border-radius:22px; border:3px solid #2B2A1A;
+  background:radial-gradient(circle, rgba(0,0,0,.15) 0 2px, transparent 3px) 0 0/14px 14px, #7A5230; box-shadow:0 12px 0 rgba(0,0,0,.3)}
+:root[data-gtheme="dino"] .cell{background-image:radial-gradient(circle at 70% 70%, rgba(255,255,255,.12) 0 10%, transparent 11%)}
+:root[data-gtheme="dino"] .wall{border-radius:8px; border:2px solid #2B2A1A;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 4px), linear-gradient(90deg, var(--wc) 0 15%, #9A6A3A 15% 85%, var(--wc) 85%)}
+:root[data-gtheme="dino"] .wall.V{background:repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 1px, transparent 1px 4px), linear-gradient(180deg, var(--wc) 0 15%, #9A6A3A 15% 85%, var(--wc) 85%)}
+:root[data-gtheme="dino"] .token{border-color:#2B2A1A; background:#FFF4D6; box-shadow:0 0 0 3px var(--pc), 0 4px 0 rgba(0,0,0,.35); text-shadow:none}
+.fx.leaf{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; opacity:.85}
+.mini.dino{background:#7A5230; box-shadow:0 0 0 2px #2B2A1A}
+.mini.dino i{background:#8DB257}.mini.dino i:nth-child(3){background:#FF7A1A; border-radius:50% 50% 4px 4px}
+
+/* ❄️ 겨울 눈마을 */
+:root[data-gtheme="snow"]{
+  --ground:#CFE6F7; --ink:#1B3550; --muted:#46658A;
+  --panel:#FFFFFF; --panel-ink:#1B3550; --panel-edge:#1B3550;
+  --frame:#FFFFFF; --frame-edge:#1B3550;
+  --cellA:#E8F4FC; --cellB:#DCEEFA; --cellC:#EEF8FF; --cellD:#D6EAF7; --cell-edge:rgba(27,53,80,.16);
+  --accent:#E63946; --accent-ink:#FFFFFF; --danger:#C1121F;
+  --radius:18px; --cell-radius:24%;
+  --f-display:'Yeon Sung', 'Jua', sans-serif; --f-body:'Jua', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Yeon Sung', sans-serif;
+  color-scheme:light;
+}
+:root[data-gtheme="snow"] body{background-image:
+  radial-gradient(ellipse 70% 22% at 18% 100%, #fff 0 60%, transparent 61%),
+  radial-gradient(ellipse 70% 18% at 88% 100%, #F6FBFF 0 60%, transparent 61%),
+  linear-gradient(#BFDDF2, #E9F5FD 75%)}
+:root[data-gtheme="snow"] .logo h1{color:#fff; text-shadow:0 4px 0 #1B3550, 0 0 18px rgba(255,255,255,.8)}
+:root[data-gtheme="snow"] .frame{border-radius:26px; border:3px solid #1B3550; box-shadow:0 0 0 6px #fff, 0 0 0 8px #1B3550, 0 12px 0 rgba(27,53,80,.2)}
+:root[data-gtheme="snow"] .cell{background-image:linear-gradient(135deg, rgba(255,255,255,.9) 0 18%, transparent 19%)}
+:root[data-gtheme="snow"] .wall{border-radius:6px; border:2px solid #fff;
+  background:linear-gradient(135deg, rgba(255,255,255,.55), rgba(255,255,255,0) 45%), var(--wc); box-shadow:0 0 0 2px #1B3550, 0 3px 0 rgba(27,53,80,.3)}
+:root[data-gtheme="snow"] .token{border-color:#1B3550}
+.fx.flake{border-radius:50%; background:#fff; box-shadow:0 0 6px rgba(255,255,255,.9)}
+.mini.snow{background:#fff; box-shadow:0 0 0 2px #1B3550}
+.mini.snow i{background:#DCEEFA}.mini.snow i:nth-child(2){background:#E63946}.mini.snow i:nth-child(9){background:#2BA84A}
+
+/* ⏸ 일시정지 */
+#pause{position:fixed; inset:0; z-index:45; display:grid; place-items:center; padding:16px; text-align:center;
+  background-color:var(--ground)}
+#pause .pbox{display:flex; flex-direction:column; align-items:center; gap:16px}
+#pause .pico{font-size:72px; line-height:1; color:var(--accent); font-family:var(--f-display)}
+#pause h3{margin:0; font-family:var(--f-display); font-size:36px; color:var(--ink); font-weight:800}
+#pause p{margin:0; color:var(--muted); font-size:16px}
+#pause .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center}
+@media (max-width:640px){
+  .gbar{flex-wrap:wrap; row-gap:4px}
+  .turnbanner{order:3; flex-basis:100%}
+  #btnPause .txt, #btnHome .txt{display:none}
+}
+html.is-land #btnPause .txt, html.is-land #btnHome .txt{display:none}
+@media (prefers-reduced-motion:reduce){ #fx{display:none} }
+
+/* ---------- 씽씽 도로 테마 ---------- */
+:root[data-gtheme="road"]{
+  --ground:#A8D96C; --ground-dot1:rgba(255,255,255,.25); --ground-dot2:rgba(70,140,40,.25); --ground-dot3:rgba(255,255,255,.18);
+  --ink:#1E2430; --muted:#3F5130;
+  --panel:#FFFFFF; --panel-ink:#1E2430; --panel-edge:#1E2430;
+  --frame:#C9CED4; --frame-edge:#1E2430;
+  --cellA:#4A4F58; --cellB:#454A53; --cellC:#4D525B; --cellD:#484D56;
+  --cell-edge:rgba(0,0,0,.35);
+  --accent:#F5C518; --accent-ink:#1E2430;
+  --danger:#E63946; --ok:#2BA84A;
+  --radius:14px; --cell-radius:12%;
+  --f-display:'Black Han Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-body:'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-latin:'Black Han Sans', sans-serif;
+  color-scheme:light;
+}
+:root[data-gtheme="road"] body{
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,.35) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,.3) 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 85%, rgba(60,130,40,.35) 0 4px, transparent 5px);
+  background-size:90px 90px, 70px 70px, 110px 110px;
+}
+:root[data-gtheme="road"] #setup{padding-block-end:110px}
+:root[data-gtheme="road"] .logo h1{color:#1E2430; font-weight:400; text-shadow:0 5px 0 #F5C518, 0 9px 0 rgba(30,36,48,.2)}
+:root[data-gtheme="road"] .logo .sub{color:#1E2430; letter-spacing:.4em}
+:root[data-gtheme="road"] .frame{border-radius:18px; border:4px solid #1E2430;
+  background:repeating-linear-gradient(90deg,#C9CED4 0 14px,#BCC2C9 14px 16px);
+  box-shadow:0 0 0 5px #F5C518, 0 0 0 9px #1E2430, 0 12px 0 rgba(30,36,48,.25)}
+:root[data-gtheme="road"] .cell{background-image:linear-gradient(90deg, transparent 46%, rgba(255,255,255,.45) 46% 54%, transparent 54%);
+  background-size:100% 34%; background-repeat:no-repeat; background-position:center;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.3)}
+:root[data-gtheme="road"] .cell.c0{background-color:var(--cellA)} :root[data-gtheme="road"] .cell.c1{background-color:var(--cellB)}
+:root[data-gtheme="road"] .cell.c2{background-color:var(--cellC)} :root[data-gtheme="road"] .cell.c3{background-color:var(--cellD)}
+:root[data-gtheme="road"] .cell.goal::before{opacity:.55; background:repeating-conic-gradient(#fff 0 25%, #1E2430 0 50%) 0 0/50% 50%}
+:root[data-gtheme="road"] .cell.goal{box-shadow:inset 0 0 0 3px var(--gc)}
+:root[data-gtheme="road"] .wall{border-radius:4px; border:2px solid #1E2430;
+  background:repeating-linear-gradient(45deg, var(--wc) 0 7px, #fff 7px 13px);
+  box-shadow:0 3px 0 rgba(0,0,0,.35)}
+:root[data-gtheme="road"] .wall.ghost.bad{background:var(--danger)}
+:root[data-gtheme="road"] .token{border:3px solid #1E2430; background:#fff; box-shadow:0 0 0 3px var(--pc), 0 4px 0 rgba(0,0,0,.35); text-shadow:none}
+:root[data-gtheme="road"] .hint{background:rgba(255,255,255,.85); color:#1E2430; border-radius:999px; padding:2px 12px; flex-basis:auto}
+:root[data-gtheme="road"] .chip[aria-pressed="true"], :root[data-gtheme="road"] .seg button[aria-pressed="true"]{color:#1E2430}
+:root[data-gtheme="road"] .turnbanner{font-family:var(--f-display); font-weight:400}
+.mini.road{background:#C9CED4; box-shadow:0 0 0 2px #F5C518, 0 0 0 4px #1E2430}
+.mini.road i{background:#4A4F58 linear-gradient(90deg, transparent 45%, rgba(255,255,255,.6) 45% 55%, transparent 55%) 0 30%/100% 40% no-repeat}
+.mini.road i:nth-child(1){background:#F5C518}.mini.road i:nth-child(10){background:#3D7BFF}
+
+/* 도로 위를 달리는 차들 (도로 테마에서만 보임) */
+#traffic{display:none; position:fixed; left:0; right:0; bottom:0; height:84px; z-index:0; pointer-events:none; overflow:hidden;
+  background:linear-gradient(#8E9399 0 6px, #3E434B 6px calc(100% - 6px), #8E9399 calc(100% - 6px));}
+#traffic::before{content:""; position:absolute; left:0; right:0; top:calc(50% - 2px); height:4px;
+  background:repeating-linear-gradient(90deg, #F5C518 0 28px, transparent 28px 48px)}
+:root[data-gtheme="road"] #traffic{display:block}
+:root[data-gtheme="road"] #setup, :root[data-gtheme="road"] #game{position:relative; z-index:1}
+html.is-rotated #traffic{display:none!important}
+:root[data-gtheme="road"] #game{padding-block-end:62px}
+body:has(#game:not([hidden])) #traffic{height:56px}
+body:has(#game:not([hidden])) .car{font-size:24px}
+body:has(#game:not([hidden])) .car.L{top:2px} body:has(#game:not([hidden])) .car.R{bottom:2px}
+html.is-rotated:root[data-gtheme="road"] #game{padding-block-end:8px}
+.car{position:absolute; left:0; font-size:34px; line-height:1; will-change:transform;
+  font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.car span{display:inline-block}
+.car.L{top:4px; animation:driveL linear infinite}
+.car.R{bottom:4px; animation:driveR linear infinite}
+.car.R span{transform:scaleX(-1)}
+@keyframes driveL{from{transform:translateX(105vw)} to{transform:translateX(-120px)}}
+@keyframes driveR{from{transform:translateX(-120px)} to{transform:translateX(105vw)}}
+.car.siren::after{content:""; position:absolute; left:40%; top:-4px; width:10px; height:6px; border-radius:3px; background:#E63946; animation:siren .4s steps(2) infinite}
+@keyframes siren{50%{background:#3D7BFF}}
+
 /* ---------- 90s 오락실 테마 ---------- */
 :root[data-gtheme="arcade"]{
   --ground:#0A0720; --ground-dot1:rgba(255,46,151,.18); --ground-dot2:rgba(34,229,255,.16); --ground-dot3:rgba(255,230,0,.08);
@@ -274,7 +513,6 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
     repeating-linear-gradient(0deg, rgba(34,229,255,.07) 0 1px, transparent 1px 48px);
 }
 :root[data-gtheme="arcade"] body::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:60;
-  background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
   box-shadow:inset 0 0 120px rgba(0,0,0,.7)}
 :root[data-gtheme="arcade"] .logo h1{color:var(--accent); font-size:clamp(40px,10vw,72px); text-shadow:4px 4px 0 var(--neon2), 8px 8px 0 var(--neon1)}
 :root[data-gtheme="arcade"] .logo .sub{color:var(--neon1); font-size:12px; margin-top:12px; letter-spacing:.2em; animation:blink 1.1s steps(2) infinite}
@@ -332,7 +570,7 @@ html.is-rotated #game{
 html.is-rotated body{overflow:hidden}
 
 @media (max-width:560px){
-  .players,.theme-row{grid-template-columns:1fr}
+  .players{grid-template-columns:1fr}
   .seg button{padding:8px 12px; font-size:15px}
   .gbtn{padding:5px 9px; font-size:13px}
 }
@@ -345,6 +583,15 @@ html.is-rotated body{overflow:hidden}
 
 
 <!-- ===== 설정 화면 ===== -->
+<div id="fx" aria-hidden="true"></div>
+<div id="traffic" aria-hidden="true">
+  <div class="car L" style="animation-duration:11s;animation-delay:-2s"><span>🚌</span></div>
+  <div class="car L" style="animation-duration:8s;animation-delay:-6s"><span>🚕</span></div>
+  <div class="car L" style="animation-duration:9.5s;animation-delay:-9s"><span>🚗</span></div>
+  <div class="car R siren" style="animation-duration:6.5s;animation-delay:-1s"><span>🚓</span></div>
+  <div class="car R" style="animation-duration:10s;animation-delay:-5s"><span>🚒</span></div>
+  <div class="car R siren" style="animation-duration:7.5s;animation-delay:-4s"><span>🚑</span></div>
+</div>
 <main id="setup">
   <div class="setup-card">
     <div class="logo">
@@ -380,6 +627,30 @@ html.is-rotated body{overflow:hidden}
         <button class="theme-card" data-theme="arcade" aria-pressed="false">
           <div class="mini arc"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <b>90s 오락실</b><span>네온 불빛과 8비트 화면</span>
+        </button>
+        <button class="theme-card" data-theme="road" aria-pressed="false">
+          <div class="mini road"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>씽씽 도로</b><span>버스·경찰차가 달리는 길</span>
+        </button>
+        <button class="theme-card" data-theme="cafe" aria-pressed="false">
+          <div class="mini cafe"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>아늑한 카페</b><span>원목 테이블과 커피 향</span>
+        </button>
+        <button class="theme-card" data-theme="ocean" aria-pressed="false">
+          <div class="mini ocean"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>바닷속</b><span>보글보글 물방울과 산호</span>
+        </button>
+        <button class="theme-card" data-theme="space" aria-pressed="false">
+          <div class="mini space"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>우주 정거장</b><span>별똥별과 레이저 방벽</span>
+        </button>
+        <button class="theme-card" data-theme="dino" aria-pressed="false">
+          <div class="mini dino"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>공룡 정글</b><span>화산과 통나무 울타리</span>
+        </button>
+        <button class="theme-card" data-theme="snow" aria-pressed="false">
+          <div class="mini snow"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>겨울 눈마을</b><span>펑펑 눈과 얼음 블록</span>
         </button>
       </div>
     </section>
@@ -425,7 +696,8 @@ html.is-rotated body{overflow:hidden}
 <!-- ===== 게임 화면 ===== -->
 <div id="game" hidden>
   <header class="gbar">
-    <button class="gbtn" id="btnHome">처음으로</button>
+    <button class="gbtn" id="btnHome"><span class="ico">⌂</span><span class="txt"> 처음으로</span></button>
+    <button class="gbtn" id="btnPause"><span class="ico">⏸</span><span class="txt"> 일시정지</span></button>
     <div class="turnbanner" id="turnBanner"></div>
     <div class="snd">
       <button class="gbtn" id="gMusic" aria-pressed="true">♪</button>
@@ -448,6 +720,17 @@ html.is-rotated body{overflow:hidden}
     <button class="rot" id="btnRot"><span class="bar H" id="rotBar"></span><span id="rotTxt">가로 벽</span></button>
     <div class="hint" id="hint"></div>
   </div>
+  <div id="pause" hidden>
+    <div class="pbox">
+      <div class="pico">⏸</div>
+      <h3>잠깐 쉬는 중</h3>
+      <p>게임판은 가려 두었어요. 시간도 멈춰 있어요.</p>
+      <div class="row">
+        <button class="start" id="btnResume">▶ 이어하기</button>
+        <button class="gbtn" id="btnPauseHome">처음으로</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
   <div class="overlay" id="overlay" hidden><div class="dialog" id="dialog"></div></div>
   <div class="confetti" id="confetti"></div>
@@ -458,6 +741,15 @@ html.is-rotated body{overflow:hidden}
 'use strict';
 const $ = s => document.querySelector(s);
 const PIECES = ['🦊','🐰','🐻','🐸','🐯','🐧','🦄','🐲','♞','♜','♚','♛'];
+const THEME_PIECES = {
+  road:['🚓','🚌','🚒','🚑','🚕','🚜'], cafe:['☕','🧁','🍩','🥐','🍰','🧋'], ocean:['🐠','🐙','🐳','🦀','🐢','🐬'],
+  space:['🚀','🛸','🪐','🌙','👽','⭐'], dino:['🦖','🦕','🐊','🦎','🥚','🌋'], snow:['⛄','🐧','🦌','🎅','❄️','🎄']
+};
+function piecesFor(p){
+  const list = [...(THEME_PIECES[S.theme]||[]), ...PIECES];
+  if (!list.includes(S.players[p].piece)) list.unshift(S.players[p].piece);
+  return [...new Set(list)];
+}
 const COLORS = ['#FF5A5F','#FF9F1C','#FFD23F','#3BB273','#3D7BFF','#9B5DE5','#F15BB5','#5C4033'];
 const LEVEL_NAME = {easy:'쉬움', normal:'보통', hard:'어려움'};
 
@@ -472,7 +764,22 @@ const S = Object.assign({
 }, store.get('settings', {}));
 
 function saveSettings(){ store.set('settings', S); }
-function applyTheme(){ document.documentElement.dataset.gtheme = S.theme; }
+function applyTheme(){ document.documentElement.dataset.gtheme = S.theme; buildFx(); }
+function buildFx(){
+  const box = document.getElementById('fx'); if (!box) return;
+  box.innerHTML = '';
+  const R = (a,b) => a + Math.random()*(b-a);
+  const add = (cls, css, txt) => { const e = document.createElement('i'); e.className = 'fx '+cls; Object.assign(e.style, css); if (txt) e.textContent = txt; box.appendChild(e); };
+  const th = S.theme;
+  if (th==='cafe') for (let i=0;i<14;i++){ const z=R(30,110); add('rise bokeh', {left:R(0,100)+'%', width:z+'px', height:z+'px', animationDuration:R(16,30)+'s', animationDelay:-R(0,30)+'s', '--dx':R(-60,60)+'px'}); }
+  if (th==='ocean') for (let i=0;i<24;i++){ const z=R(6,26); add('rise bubble', {left:R(0,100)+'%', width:z+'px', height:z+'px', animationDuration:R(7,15)+'s', animationDelay:-R(0,15)+'s', '--dx':R(-40,40)+'px'}); }
+  if (th==='space'){
+    for (let i=0;i<70;i++){ const z=R(1,3.2); add('tw star', {left:R(0,100)+'%', top:R(0,100)+'%', width:z+'px', height:z+'px', animationDuration:R(1.2,3.5)+'s', animationDelay:-R(0,3)+'s'}); }
+    for (let i=0;i<2;i++) add('shoot', {left:R(60,100)+'%', top:R(0,35)+'%', animationDuration:R(7,11)+'s', animationDelay:R(0,6)+'s'});
+  }
+  if (th==='dino') for (let i=0;i<12;i++) add('fall leaf', {left:R(0,100)+'%', fontSize:R(18,30)+'px', animationDuration:R(9,17)+'s', animationDelay:-R(0,17)+'s', '--dx':R(-120,120)+'px', '--rot':R(180,720)+'deg'}, i%3 ? '🍃' : '🌿');
+  if (th==='snow') for (let i=0;i<55;i++){ const z=R(3,9); add('fall flake', {left:R(0,100)+'%', width:z+'px', height:z+'px', opacity:R(.5,1), animationDuration:R(7,18)+'s', animationDelay:-R(0,18)+'s', '--dx':R(-80,80)+'px'}); }
+}
 applyTheme();
 
 /* ================= 소리 (Web Audio 합성) ================= */
@@ -711,15 +1018,185 @@ function arcadeStep(gi, t){
   }
 }
 
+/* --- 부릉부릉 드라이브: G장조, 신스 리드 + 통통 베이스 + 오르간 엇박 + 드럼 + 경적·사이렌 --- */
+const R_STEP = 0.2;
+const R_CH = {A:[43,38,40,36,43,38,36,38], B:[36,38,35,40,36,38,43,38]};
+const R_TRI = {43:[55,59,62],38:[54,57,62],40:[55,59,64],36:[55,60,64],35:[54,59,62]};
+const R_MEL = {
+  A:{0:[67,1],1:[71,1],2:[74,2],4:[71,1],5:[74,1],6:[79,2], 8:[78,2],10:[74,2],12:[69,2],14:[74,2],
+     16:[76,1],17:[74,1],18:[71,2],20:[76,2],22:[79,2], 24:[79,2],26:[76,1],27:[74,1],28:[72,4],
+     32:[67,1],33:[71,1],34:[74,2],36:[79,1],37:[81,1],38:[83,2], 40:[81,2],42:[78,2],44:[74,4],
+     48:[76,2],50:[79,2],52:[76,1],53:[74,1],54:[72,2], 56:[74,3],59:[69,1]},
+  B:{0:[72,2],2:[76,2],4:[79,4], 8:[78,2],10:[81,2],12:[78,4], 16:[74,2],18:[78,2],20:[83,3],23:[81,1],
+     24:[79,4],28:[76,4], 32:[72,1],33:[74,1],34:[76,2],36:[79,2],38:[84,2], 40:[83,2],42:[81,2],44:[78,2],46:[74,2],
+     48:[79,4],52:[83,4], 56:[81,2],58:[78,2],60:[74,2],62:[69,2]}
+};
+const R_ORDER = ['A','B','A','B','C','A','B'];
+function rlead(n, t, dur, vol){
+  const o = ac.createOscillator(); o.type='square'; o.frequency.value = mtof(n);
+  const o2 = ac.createOscillator(); o2.type='sine'; o2.frequency.value = mtof(n);
+  const lfo = ac.createOscillator(); lfo.frequency.value = 6; const ld = ac.createGain(); ld.gain.value = mtof(n)*0.008;
+  lfo.connect(ld); ld.connect(o.frequency); ld.connect(o2.frequency);
+  const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value = 2600;
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.02);
+  g.gain.setValueAtTime(vol,t+dur*0.8); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  const g2 = ac.createGain(); g2.gain.value = 0.35;
+  o.connect(fl); o2.connect(g2); g2.connect(fl); fl.connect(g); g.connect(bgmGain);
+  [o,o2,lfo].forEach(x => { x.start(t); x.stop(t+dur+0.05); });
+}
+function honk(dest, t, vol=0.12){
+  [392, 494].forEach(f => tone(dest, f, t, {type:'square', dur:0.13, vol, a:0.005, lp:1800}));
+}
+function roadStep(gi, t){
+  const sec = Math.floor(gi/64), i = gi%64, part = R_ORDER[sec];
+  const bar = Math.floor(i/8), s = i%8;
+  const root = R_CH[part==='C' ? 'A' : part][bar], tri = R_TRI[root];
+  // 드럼
+  if (s===0 || s===4 || (s===5 && bar%2)) tone(bgmGain, 150, t, {dur:0.14, vol:0.42, to:45});
+  if (s===2 || s===6) noise(bgmGain, t, {dur:0.11, vol:0.17, type:'bandpass', f:1800, q:0.7});
+  noise(bgmGain, t, {dur:0.03, vol: s%2 ? 0.03 : 0.05, type:'highpass', f:7500});
+  if (bar===7 && s>=6) noise(bgmGain, t+0.1, {dur:0.08, vol:0.14, type:'bandpass', f:1800, q:0.7});
+  // 베이스: 통통 튀는 8분음표
+  tone(bgmGain, mtof(root + (s%2 ? 12 : 0)), t, {type:'square', dur:0.16, vol:0.12, lp:700});
+  // 오르간 엇박
+  if (s%2===1) tri.forEach(n => tone(bgmGain, mtof(n), t, {type:'triangle', dur:0.1, vol:0.04}));
+  if (part==='C'){
+    // 사이렌 구간
+    if (s===0){
+      const o = ac.createOscillator(); o.type='sine';
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.05,t+0.1);
+      g.gain.setValueAtTime(0.05,t+1.5); g.gain.linearRampToValueAtTime(0.0001,t+1.6);
+      if (bar%2===0){ o.frequency.setValueAtTime(650,t); o.frequency.linearRampToValueAtTime(980,t+0.8); o.frequency.linearRampToValueAtTime(650,t+1.6); }
+      else { [0,0.4,0.8,1.2].forEach((d,k) => o.frequency.setValueAtTime(k%2 ? 770 : 960, t+d)); }
+      o.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+1.65);
+    }
+    if (bar%2===1 && (s===4 || s===6)) honk(bgmGain, t, 0.08);
+    return;
+  }
+  const m = R_MEL[part][i];
+  if (m){ rlead(m[0], t, R_STEP*m[1]*0.95, 0.1); if (sec>=5) rlead(m[0]-12, t, R_STEP*m[1]*0.95, 0.04); }
+  if (part==='A' && bar===7 && (s===4 || s===6)) honk(bgmGain, t, 0.09);   // 빵빵!
+}
+
+/* ============ 추가 배경 5곡 (공용 엔진) ============ */
+function makeSong(c){
+  const per = c.spb*8;
+  return {step:c.step, len:per*c.order.length, fn:(gi,t)=>{
+    const sec = Math.floor(gi/per), i = gi%per, part = c.order[sec];
+    const bar = Math.floor(i/c.spb), s = i%c.spb;
+    const [root, voi] = c.chords[part][bar];
+    c.beat({t, s, bar, root, voi, part, sec, i});
+    const mp = c.mel[part], m = mp && mp[i];
+    if (m) c.lead(m[0], t, c.step*m[1], {sec, part});
+  }};
+}
+function sine(dest, n, t, dur, vol, a=0.01){ tone(dest, mtof(n), t, {dur, vol, a}); }
+function rhodes(n, t, vol, dur=0.9){ sine(bgmGain, n, t, dur, vol, 0.008); tone(bgmGain, mtof(n)*2, t, {dur:dur*0.4, vol:vol*0.25, a:0.004}); }
+function bell(dest, n, t, vol, dur=1.2){ sine(dest, n, t, dur, vol, 0.004); tone(dest, mtof(n)*2.76, t, {dur:dur*0.35, vol:vol*0.3, a:0.002}); }
+function glide(n, t, dur, vol){
+  const o = ac.createOscillator(); o.type='triangle'; o.frequency.value = mtof(n);
+  const lfo = ac.createOscillator(); lfo.frequency.value = 5; const ld = ac.createGain(); ld.gain.value = mtof(n)*0.006; lfo.connect(ld); ld.connect(o.frequency);
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+Math.min(0.3,dur*0.3));
+  g.gain.setValueAtTime(vol,t+dur*0.75); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(bgmGain); o.start(t); lfo.start(t); o.stop(t+dur+0.05); lfo.stop(t+dur+0.05);
+}
+const V = {
+  Fmaj7:[53,57,60,64], Dm7:[53,57,60,62], Gm7:[55,58,62,65], C7:[52,55,58,60], Am7:[52,55,57,60], Bbmaj7:[53,57,58,62], A7:[52,55,57,61],
+  Cmaj7:[60,64,67,71], Am7h:[57,60,64,67], Fmaj7h:[57,60,64,65], G:[55,59,62,67], Em7:[55,59,62,64], Dm7h:[57,60,62,65],
+  Dm:[62,65,69], Bb:[62,65,70], F:[60,65,69], C:[60,64,67], Gm:[62,67,70], A:[61,64,69],
+  pAm:[57,60,64], pG:[55,59,62], pF:[53,57,60], pC:[55,60,64],
+  sC:[60,64,67], sF:[60,65,69], sG:[59,62,67], sAm:[60,64,69]
+};
+const SONG_CAFE = makeSong({ step:0.22, spb:8, order:['A','B','A','B','A'],
+  chords:{A:[[41,V.Fmaj7],[38,V.Dm7],[43,V.Gm7],[36,V.C7],[41,V.Fmaj7],[45,V.Am7],[43,V.Gm7],[36,V.C7]],
+          B:[[46,V.Bbmaj7],[45,V.Am7],[43,V.Gm7],[36,V.C7],[46,V.Bbmaj7],[45,V.A7],[38,V.Dm7],[36,V.C7]]},
+  mel:{A:{0:[72,3],3:[69,1],4:[72,2],6:[76,2], 8:[74,4],12:[72,2],14:[69,2], 16:[70,3],19:[69,1],20:[67,2],22:[70,2], 24:[69,6],30:[67,2],
+          32:[65,2],34:[69,2],36:[72,2],38:[77,2], 40:[76,4],44:[72,4], 48:[74,3],51:[72,1],52:[70,2],54:[67,2], 56:[65,6]},
+       B:{0:[74,3],3:[77,1],4:[81,4], 8:[79,2],10:[76,2],12:[72,4], 16:[74,2],18:[70,2],20:[67,4], 24:[70,3],27:[72,1],28:[76,4],
+          32:[77,3],35:[74,1],36:[70,4], 40:[73,2],42:[76,2],44:[79,4], 48:[77,4],52:[74,2],54:[72,2], 56:[70,4],60:[67,4]}},
+  beat:({t,s,bar,root,voi}) => {
+    const r = root - 12;
+    if (s===0) sine(bgmGain, r, t, 0.5, 0.3); if (s===3 || s===4) sine(bgmGain, r+7, t, 0.35, 0.22); if (s===7) sine(bgmGain, r, t, 0.3, 0.2);
+    const comp = bar%2 ? [1,4] : [0,3,6];
+    if (comp.includes(s)) voi.forEach(n => rhodes(n, t, 0.035, 0.5));
+    noise(bgmGain, t, {dur:0.12, vol: s%2 ? 0.018 : 0.03, type:'bandpass', f:3500, q:0.5});
+    if (s===3 || s===6) tone(bgmGain, 1700, t, {type:'triangle', dur:0.03, vol:0.05});
+  },
+  lead:(n,t,dur,{sec}) => { rhodes(n, t, 0.11, Math.max(0.5,dur)); if (sec>=2) sine(bgmGain, n+12, t+0.01, dur*0.8, 0.02); }
+});
+const SONG_OCEAN = makeSong({ step:0.26, spb:6, order:['A','B','A','B','A','B'],
+  chords:{A:[[36,V.Cmaj7],[36,V.Cmaj7],[33,V.Am7h],[33,V.Am7h],[41,V.Fmaj7h],[41,V.Fmaj7h],[43,V.G],[43,V.G]],
+          B:[[40,V.Em7],[40,V.Em7],[33,V.Am7h],[33,V.Am7h],[38,V.Dm7h],[38,V.Dm7h],[43,V.G],[43,V.G]]},
+  mel:{A:{0:[76,3],3:[79,3],6:[83,6],12:[81,3],15:[79,3],18:[76,6],24:[77,3],27:[81,3],30:[84,6],36:[83,3],39:[79,3],42:[74,6]},
+       B:{0:[79,3],3:[83,3],6:[86,6],12:[84,3],15:[81,3],18:[79,6],24:[81,3],27:[77,3],30:[74,6],36:[71,3],39:[74,3],42:[79,6]}},
+  beat:({t,s,bar,root,voi}) => {
+    if (s===0 && bar%2===0){ voi.forEach(n => strings(n-12, t, 0.26*12, 0.022)); sine(bgmGain, root, t, 0.26*11, 0.25, 0.3); }
+    bell(bgmGain, voi[s%voi.length]+12, t, 0.045, 0.9);
+    if (s===4 && bar%2===1) tone(bgmGain, 400 + Math.random()*300, t, {dur:0.12, vol:0.05, to:1200});
+  },
+  lead:(n,t,dur) => bell(bgmGain, n, t, 0.12, dur*1.2)
+});
+const SONG_SPACE = makeSong({ step:0.13, spb:16, order:['A','B','A','B','A'],
+  chords:{A:[[38,V.Dm],[38,V.Dm],[34,V.Bb],[34,V.Bb],[41,V.F],[41,V.F],[36,V.C],[36,V.C]],
+          B:[[43,V.Gm],[43,V.Gm],[34,V.Bb],[34,V.Bb],[38,V.Dm],[38,V.Dm],[33,V.A],[33,V.A]]},
+  mel:{A:{0:[74,8],8:[77,8],16:[76,16],32:[74,8],40:[70,8],48:[72,16],64:[69,8],72:[72,8],80:[77,16],96:[76,8],104:[72,8],112:[67,16]},
+       B:{0:[79,8],8:[82,8],16:[81,16],32:[77,8],40:[74,8],48:[77,16],64:[81,16],80:[77,16],96:[76,8],104:[73,8],112:[69,16]}},
+  beat:({t,s,bar,root,voi}) => {
+    if (s===0 && bar%2===0) voi.forEach(n => strings(n-12, t, 0.13*32, 0.025));
+    const n = voi[s%3] + (Math.floor(s/3)%2 ? 12 : 0);
+    tone(bgmGain, mtof(n), t, {type:'triangle', dur:0.12, vol:0.05});
+    tone(bgmGain, mtof(n), t+0.39, {type:'triangle', dur:0.1, vol:0.018});
+    if (s===0 || s===8){ sine(bgmGain, root, t, 0.9, 0.22); tone(bgmGain, 85, t, {dur:0.2, vol:0.2, to:40}); }
+    if (s===4 || s===12) noise(bgmGain, t, {dur:0.05, vol:0.03, type:'highpass', f:6000});
+  },
+  lead:(n,t,dur) => glide(n, t, dur*0.95, 0.07)
+});
+const SONG_DINO = makeSong({ step:0.2, spb:8, order:['A','B','A','B','A','B'],
+  chords:{A:[[33,V.pAm],[33,V.pAm],[31,V.pG],[33,V.pAm],[33,V.pAm],[33,V.pAm],[29,V.pF],[31,V.pG]],
+          B:[[36,V.pC],[36,V.pC],[31,V.pG],[31,V.pG],[33,V.pAm],[33,V.pAm],[29,V.pF],[31,V.pG]]},
+  mel:{A:{0:[69,2],2:[72,2],4:[74,1],5:[72,1],6:[69,2], 8:[76,2],10:[74,2],12:[72,4], 16:[67,2],18:[69,2],20:[72,2],22:[74,2], 24:[69,6],
+          32:[76,2],34:[79,2],36:[76,1],37:[74,1],38:[72,2], 40:[74,2],42:[72,2],44:[69,4], 48:[72,2],50:[69,2],52:[67,4], 56:[69,4],60:[67,2],62:[64,2]},
+       B:{0:[79,2],2:[76,2],4:[79,2],6:[81,2], 8:[84,4],12:[81,4], 16:[79,2],18:[76,2],20:[74,4], 24:[76,6],30:[74,2],
+          32:[72,2],34:[74,2],36:[76,2],38:[79,2], 40:[76,4],44:[72,4], 48:[69,2],50:[72,2],52:[74,4], 56:[76,4],60:[74,2],62:[72,2]}},
+  beat:({t,s,bar,root,voi}) => {
+    if (s===0){ const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(root+12);
+      const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value = 260; const g = ac.createGain(); env(g, t, 0.1, 0.12, 1.5);
+      o.connect(fl); fl.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+1.7); }
+    if (s===0 || s===3 || s===6) tone(bgmGain, 110, t, {dur:0.3, vol:0.42, to:65});
+    if (s===2 || s===7 || (s===5 && bar%2)) tone(bgmGain, 190, t, {dur:0.18, vol:0.25, to:120});
+    if (s===4) tone(bgmGain, 900, t, {type:'triangle', dur:0.04, vol:0.1});
+    noise(bgmGain, t, {dur:0.05, vol: s%2 ? 0.025 : 0.04, type:'highpass', f:6000});
+    if (s===2 || s===6) voi.forEach(n => marimba(n, t, 0.04, 0.2));
+  },
+  lead:(n,t,dur) => marimba(n, t, 0.22, 0.25+dur*0.3)
+});
+const SONG_SNOW = makeSong({ step:0.19, spb:8, order:['A','B','A','B','A','B'],
+  chords:{A:[[36,V.sC],[41,V.sF],[36,V.sC],[43,V.sG],[36,V.sC],[41,V.sF],[43,V.sG],[36,V.sC]],
+          B:[[45,V.sAm],[41,V.sF],[36,V.sC],[43,V.sG],[45,V.sAm],[41,V.sF],[43,V.sG],[36,V.sC]]},
+  mel:{A:{0:[76,2],2:[79,2],4:[84,4], 8:[81,2],10:[77,2],12:[81,4], 16:[79,1],17:[77,1],18:[76,2],20:[72,2],22:[76,2], 24:[74,6],30:[79,2],
+          32:[76,2],34:[79,2],36:[84,2],38:[88,2], 40:[86,2],42:[84,2],44:[81,4], 48:[79,2],50:[77,2],52:[74,2],54:[71,2], 56:[72,6]},
+       B:{0:[81,4],4:[76,4], 8:[77,2],10:[81,2],12:[84,4], 16:[79,4],20:[76,4], 24:[74,2],26:[77,2],28:[79,4],
+          32:[81,2],34:[84,2],36:[88,4], 40:[86,2],42:[84,2],44:[81,2],46:[77,2], 48:[79,4],52:[74,4], 56:[76,2],58:[74,2],60:[72,4]}},
+  beat:({t,s,bar,root,voi}) => {
+    noise(bgmGain, t, {dur:0.07, vol: s%2 ? 0.03 : 0.07, type:'highpass', f:8500});
+    if (s%2===0) noise(bgmGain, t+0.05, {dur:0.05, vol:0.025, type:'highpass', f:9500});
+    if (s===0 || s===4){ tone(bgmGain, mtof(root), t, {type:'triangle', dur:0.3, vol:0.3}); tone(bgmGain, 130, t, {dur:0.1, vol:0.15, to:60}); }
+    if (s===2 || s===6){ tone(bgmGain, mtof(root+7), t, {type:'triangle', dur:0.2, vol:0.18}); voi.forEach(n => rhodes(n, t, 0.03, 0.25)); }
+  },
+  lead:(n,t,dur,{sec}) => { bell(bgmGain, n+12, t, 0.1, Math.max(0.5,dur)); if (sec>=2) sine(bgmGain, n, t, dur, 0.04); }
+});
+
 const TRACKS = {
   kids:{step:K_STEP, len:64*K_ORDER.length, fn:(i,t)=>kidsStep(i,t)},
   basic:{step:STEP, len:96*B_ORDER.length, fn:(i,t)=>bgmStep(i,t)},
   epic:{step:E_STEP, len:64*E_ORDER.length, fn:(i,t)=>epicStep(i,t)},
-  arcade:{step:A_STEP, len:64*A_ORDER.length, fn:(i,t)=>arcadeStep(i,t)}
+  arcade:{step:A_STEP, len:64*A_ORDER.length, fn:(i,t)=>arcadeStep(i,t)},
+  road:{step:R_STEP, len:64*R_ORDER.length, fn:(i,t)=>roadStep(i,t)},
+  cafe:SONG_CAFE, ocean:SONG_OCEAN, space:SONG_SPACE, dino:SONG_DINO, snow:SONG_SNOW
 };
-const TRACK_ORDER = ['kids','basic','epic','arcade'];
-const TRACK_NAME = {kids:'놀이터 동요', basic:'중세 마을 춤곡', epic:'웅장한 행진', arcade:'8비트 오락실'};
-const THEME_TRACK = {kids:'kids', medieval:'basic', arcade:'arcade'};
+const TRACK_ORDER = ['kids','basic','epic','arcade','road','cafe','ocean','space','dino','snow'];
+const TRACK_NAME = {kids:'놀이터 동요', basic:'중세 마을 춤곡', epic:'웅장한 행진', arcade:'8비트 오락실', road:'부릉부릉 드라이브', cafe:'카페 보사노바', ocean:'몽글몽글 바닷속', space:'별빛 우주 여행', dino:'쿵쿵 정글 탐험', snow:'딸랑딸랑 눈마을'};
+const THEME_TRACK = {kids:'kids', medieval:'basic', arcade:'arcade', road:'road', cafe:'cafe', ocean:'ocean', space:'space', dino:'dino', snow:'snow'};
 function playTrack(name){
   S.track = name; saveSettings(); syncTrackUI();
   if (!S.music) return;
@@ -755,12 +1232,15 @@ const SFX = {
   click(t){ tone(sfxGain, 700, t, {type:'triangle', dur:0.06, vol:0.25, to:900}); },
   move(t){
     if (S.theme==='arcade'){ achip(988,t,0.05,0.18); achip(1319,t+0.05,0.07,0.18); return; }
+    if (S.theme==='road'){ vroom(t, 0.2); return; }
     if (S.theme==='medieval'){ noise(sfxGain,t,{dur:0.08,vol:0.5,type:'bandpass',f:900,q:3}); tone(sfxGain,200,t,{type:'triangle',dur:0.12,vol:0.35,to:150}); }
     else { tone(sfxGain,520,t,{dur:0.12,vol:0.35,to:900}); tone(sfxGain,1040,t+0.05,{type:'triangle',dur:0.08,vol:0.12}); }
   },
-  jump(t){ if (S.theme==='arcade'){ tone(sfxGain,300,t,{type:'square',dur:0.22,vol:0.16,to:1600,lp:5000}); achip(1568,t+0.22,0.08,0.15); return; }
+  jump(t){ if (S.theme==='road'){ vroom(t, 0.35, 260); honk(sfxGain, t+0.3, 0.14); return; }
+    if (S.theme==='arcade'){ tone(sfxGain,300,t,{type:'square',dur:0.22,vol:0.16,to:1600,lp:5000}); achip(1568,t+0.22,0.08,0.15); return; }
     tone(sfxGain,350,t,{type:'triangle',dur:0.25,vol:0.35,to:1100}); noise(sfxGain,t,{dur:0.2,vol:0.12,type:'bandpass',f:2500,q:1}); tone(sfxGain,900,t+0.22,{dur:0.1,vol:0.2,to:700}); },
   wall(t){
+    if (S.theme==='road'){ tone(sfxGain,300,t,{type:'square',dur:0.12,vol:0.18,to:120,lp:1500}); noise(sfxGain,t,{dur:0.15,vol:0.4,f:1500}); tone(sfxGain,1400,t+0.1,{type:'triangle',dur:0.06,vol:0.15}); tone(sfxGain,1100,t+0.18,{type:'triangle',dur:0.06,vol:0.12}); return; }
     if (S.theme==='arcade'){ tone(sfxGain,440,t,{type:'square',dur:0.18,vol:0.18,to:110,lp:3500}); noise(sfxGain,t,{dur:0.12,vol:0.3,f:2500}); achip(220,t+0.12,0.1,0.14); return; }
     tone(sfxGain,140,t,{dur:0.35,vol:0.6,to:45});
     noise(sfxGain,t,{dur:0.18,vol:0.5,f:S.theme==='medieval'?600:1200});
@@ -771,17 +1251,74 @@ const SFX = {
   tick(t, hi){ tone(sfxGain, hi?2000:1400, t, {type:'square', dur:0.03, vol:hi?0.18:0.1, lp:4000}); noise(sfxGain,t,{dur:0.02,vol:0.1,type:'highpass',f:3000}); },
   turn(t){ lute(sfxGain, 81, t, 0.12, 0.5); lute(sfxGain, 86, t+0.09, 0.12, 0.6); },
   timeout(t){ brass(sfxGain, 50, t, 0.35, 0.3); brass(sfxGain, 49, t+0.4, 0.6, 0.3); tone(sfxGain,90,t,{dur:0.8,vol:0.3,to:60}); },
-  start(t){ if (S.theme==='arcade'){ [60,64,67,72,76,79].forEach((n,i)=>achip(mtof(n+12),t+i*0.06,0.07,0.14)); achip(mtof(84),t+0.4,0.3,0.15); return; }
+  start(t){ if (S.theme==='road'){ noise(sfxGain,t,{dur:0.25,vol:0.3,f:400}); vroom(t+0.15, 0.7, 320); honk(sfxGain,t+0.9,0.15); return; }
+    if (S.theme==='arcade'){ [60,64,67,72,76,79].forEach((n,i)=>achip(mtof(n+12),t+i*0.06,0.07,0.14)); achip(mtof(84),t+0.4,0.3,0.15); return; }
     [62,66,69,74].forEach((n,i)=>brass(sfxGain,n,t+i*0.14,i===3?0.6:0.12,0.22)); drum2(t+0.56); },
-  win(t){ if (S.theme==='arcade'){ [72,76,79,84,79,84,88].forEach((n,i)=>achip(mtof(n),t+i*0.1,i===6?0.6:0.09,0.16)); return; }
+  win(t){ if (S.theme==='road'){ honk(sfxGain,t,0.16); honk(sfxGain,t+0.2,0.16); [67,71,74,79,74,79,83].forEach((n,i)=>brass(sfxGain,n,t+0.45+i*0.12,i===6?0.8:0.09,0.2)); return; }
+    if (S.theme==='arcade'){ [72,76,79,84,79,84,88].forEach((n,i)=>achip(mtof(n),t+i*0.1,i===6?0.6:0.09,0.16)); return; }
     [67,72,76,79,76,79,84].forEach((n,i)=>brass(sfxGain,n,t+i*0.13,i===6?0.9:0.1,0.22)); [60,67,72].forEach(n=>brass(sfxGain,n,t+0.78,0.9,0.12)); drum2(t+0.78); },
-  lose(t){ if (S.theme==='arcade'){ [72,71,70,69].forEach((n,i)=>achip(mtof(n-12),t+i*0.22,i===3?0.7:0.18,0.16)); tone(sfxGain,220,t+0.88,{type:'square',dur:0.6,vol:0.12,to:55,lp:2000}); return; }
+  lose(t){ if (S.theme==='road'){ tone(sfxGain,392,t,{type:'square',dur:1.1,vol:0.14,to:180,lp:1600}); tone(sfxGain,494,t,{type:'square',dur:1.1,vol:0.1,to:230,lp:1600}); return; }
+    if (S.theme==='arcade'){ [72,71,70,69].forEach((n,i)=>achip(mtof(n-12),t+i*0.22,i===3?0.7:0.18,0.16)); tone(sfxGain,220,t+0.88,{type:'square',dur:0.6,vol:0.12,to:55,lp:2000}); return; }
     [69,67,65,62].forEach((n,i)=>brass(sfxGain,n-12,t+i*0.28,i===3?0.9:0.22,0.2)); },
   warnPlace(t){ tone(sfxGain,880,t,{type:'triangle',dur:0.07,vol:0.15}); }
 };
+function vroom(t, dur, top=200){
+  const o = ac.createOscillator(); o.type='sawtooth';
+  o.frequency.setValueAtTime(70,t); o.frequency.exponentialRampToValueAtTime(top,t+dur*0.6); o.frequency.exponentialRampToValueAtTime(top*0.7,t+dur);
+  const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value = 700;
+  const g = ac.createGain(); env(g, t, 0.02, 0.3, dur);
+  o.connect(fl); fl.connect(g); g.connect(sfxGain); o.start(t); o.stop(t+dur+0.1);
+}
 function achip(f, t, dur, vol){ tone(sfxGain, f, t, {type:'square', dur, vol, a:0.002, lp:5000}); }
 function drum2(t){ tone(sfxGain,110,t,{dur:0.4,vol:0.6,to:45}); noise(sfxGain,t,{dur:0.3,vol:0.25,f:3000}); }
-function sfx(name, ...a){ if (!S.sfx) return; ensureAudio(); if (!ac) return; SFX[name](ac.currentTime+0.01, ...a); }
+
+/* 추가 배경 효과음 */
+function sweep(f1, f2, t, dur, vol, type='sine', lp=null){ tone(sfxGain, f1, t, {type, dur, vol, to:f2, lp}); }
+const TSFX = {
+  cafe:{
+    move:t => { tone(sfxGain,1250,t,{type:'triangle',dur:0.05,vol:0.2}); tone(sfxGain,620,t,{dur:0.12,vol:0.18}); },
+    jump:t => { tone(sfxGain,1250,t,{type:'triangle',dur:0.05,vol:0.2}); sweep(500,950,t+0.05,0.22,0.15); tone(sfxGain,1250,t+0.3,{type:'triangle',dur:0.05,vol:0.2}); },
+    wall:t => { tone(sfxGain,2400,t,{dur:0.3,vol:0.12}); tone(sfxGain,3150,t,{dur:0.22,vol:0.08}); noise(sfxGain,t,{dur:0.05,vol:0.2,type:'highpass',f:3000}); },
+    start:t => { bell(sfxGain,91,t,0.15,0.8); bell(sfxGain,96,t+0.15,0.15,1.2); },
+    win:t => { [84,88,91,96,91,96,100].forEach((n,i)=>bell(sfxGain,n,t+i*0.09,0.12,0.9)); },
+    lose:t => { [72,69,65,64].forEach((n,i)=>rhodesS(n,t+i*0.3,0.18)); }
+  },
+  ocean:{
+    move:t => sweep(300,900,t,0.1,0.25),
+    jump:t => { sweep(300,900,t,0.1,0.22); sweep(400,1200,t+0.12,0.1,0.2); noise(sfxGain,t+0.05,{dur:0.3,vol:0.15,f:900}); },
+    wall:t => { noise(sfxGain,t,{dur:0.45,vol:0.35,f:500}); tone(sfxGain,90,t,{dur:0.4,vol:0.35,to:55}); },
+    start:t => { [0,0.08,0.16,0.24].forEach((d,i)=>sweep(300+i*150,900+i*250,t+d,0.1,0.18)); },
+    win:t => { [72,76,79,84,88,91].forEach((n,i)=>bell(sfxGain,n,t+i*0.11,0.13,1)); },
+    lose:t => { [0,0.2,0.4].forEach((d,i)=>sweep(900-i*200,300-i*60,t+d,0.18,0.18)); }
+  },
+  space:{
+    move:t => sweep(600,1300,t,0.12,0.2),
+    jump:t => sweep(200,1600,t,0.3,0.14,'sawtooth',2500),
+    wall:t => { sweep(1800,200,t,0.28,0.12,'sawtooth',3000); sweep(900,120,t,0.3,0.12,'square',1500); },
+    start:t => { sweep(100,2000,t,0.7,0.12,'sawtooth',2500); tone(sfxGain,1568,t+0.7,{type:'triangle',dur:0.3,vol:0.15}); },
+    win:t => { [74,77,81,86,89,93].forEach((n,i)=>tone(sfxGain,mtof(n),t+i*0.1,{type:'triangle',dur:i===5?0.8:0.12,vol:0.18})); },
+    lose:t => sweep(800,60,t,1.1,0.18,'sawtooth',1500)
+  },
+  dino:{
+    move:t => { tone(sfxGain,95,t,{dur:0.25,vol:0.5,to:40}); noise(sfxGain,t,{dur:0.12,vol:0.25,f:250}); },
+    jump:t => { sweep(170,90,t,0.5,0.22,'sawtooth',900); noise(sfxGain,t,{dur:0.45,vol:0.18,type:'bandpass',f:700,q:1}); tone(sfxGain,90,t+0.45,{dur:0.25,vol:0.5,to:40}); },
+    wall:t => { tone(sfxGain,220,t,{type:'triangle',dur:0.15,vol:0.35}); tone(sfxGain,330,t+0.03,{type:'triangle',dur:0.1,vol:0.2}); noise(sfxGain,t,{dur:0.08,vol:0.3,f:800}); },
+    start:t => { [0,0.1,0.2,0.3,0.4].forEach((d,i)=>tone(sfxGain,110+i*15,t+d,{dur:0.2,vol:0.4,to:70})); },
+    win:t => { [0,0.15,0.3].forEach(d=>tone(sfxGain,110,t+d,{dur:0.25,vol:0.45,to:65})); [69,72,76,81].forEach((n,i)=>marimbaS(n,t+0.45+i*0.12)); },
+    lose:t => sweep(180,60,t,1.1,0.25,'sawtooth',700)
+  },
+  snow:{
+    move:t => { noise(sfxGain,t,{dur:0.08,vol:0.3,f:1500}); tone(sfxGain,2637,t+0.02,{dur:0.15,vol:0.06}); },
+    jump:t => { noise(sfxGain,t,{dur:0.35,vol:0.18,type:'highpass',f:8000}); sweep(500,1100,t,0.25,0.12); },
+    wall:t => { tone(sfxGain,3000,t,{dur:0.35,vol:0.12}); tone(sfxGain,4100,t,{dur:0.25,vol:0.07}); noise(sfxGain,t,{dur:0.1,vol:0.3,f:1800}); },
+    start:t => { noise(sfxGain,t,{dur:0.5,vol:0.18,type:'highpass',f:8000}); [84,88,91,96].forEach((n,i)=>bell(sfxGain,n,t+i*0.1,0.12,0.8)); },
+    win:t => { noise(sfxGain,t,{dur:0.9,vol:0.15,type:'highpass',f:8000}); [84,88,91,96,91,96,100].forEach((n,i)=>bell(sfxGain,n,t+i*0.1,0.12,0.9)); },
+    lose:t => { [91,88,84,79].forEach((n,i)=>bell(sfxGain,n,t+i*0.25,0.12,0.9)); }
+  }
+};
+function rhodesS(n,t,vol){ tone(sfxGain, mtof(n), t, {dur:0.8, vol, a:0.008}); }
+function marimbaS(n,t){ tone(sfxGain, mtof(n), t, {dur:0.35, vol:0.25, a:0.003}); tone(sfxGain, mtof(n)*4, t, {dur:0.06, vol:0.05}); }
+function sfx(name, ...a){ if (!S.sfx) return; ensureAudio(); if (!ac) return; const o = TSFX[S.theme]; if (o && o[name]) return o[name](ac.currentTime+0.01, ...a); SFX[name](ac.currentTime+0.01, ...a); }
 
 /* ================= 설정 화면 ================= */
 function pawnHTML(p, scale){
@@ -798,7 +1335,7 @@ function renderSetup(){
   $('#p2title').textContent = S.mode==='solo' ? '컴퓨터' : '플레이어 2';
   document.querySelectorAll('.pcard').forEach(card => {
     const p = +card.dataset.p;
-    card.querySelectorAll('.glyph').forEach(g => g.setAttribute('aria-pressed', g.dataset.g===S.players[p].piece));
+    card.querySelector('.glyphs').innerHTML = piecesFor(p).map(g => `<button class="glyph" data-g="${g}" aria-label="말 ${g}" aria-pressed="${g===S.players[p].piece}">${g}</button>`).join('');
     card.querySelectorAll('.sw').forEach(s => s.setAttribute('aria-pressed', s.dataset.c===S.players[p].color));
     $('#prev'+p).innerHTML = pawnHTML(p, '28px');
   });
@@ -807,7 +1344,6 @@ function renderSetup(){
 }
 document.querySelectorAll('.pcard').forEach(card => {
   const p = +card.dataset.p;
-  card.querySelector('.glyphs').innerHTML = PIECES.map(g => `<button class="glyph" data-g="${g}" aria-label="말 ${g}">${g}</button>`).join('');
   card.querySelector('.swatches').innerHTML = COLORS.map(c => `<button class="sw" data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('');
   card.addEventListener('click', e => {
     const g = e.target.closest('.glyph'), s = e.target.closest('.sw');
@@ -1160,7 +1696,7 @@ function onTimeout(p){
   if (G.strikes[p] >= 3){ return endGame(1-p, 'timeout'); }
   toast(`${pname(p)} 시간 초과! (${G.strikes[p]}/3)`);
   G.turn = 1-p; G.action = 'move';
-  setTimeout(() => { if (!G.over) startTurn(); }, 500);
+  setTimeout(() => { if (!G.over && !paused) startTurn(); }, 500);
 }
 function afterAction(p){
   clearInterval(tickTimer);
@@ -1198,7 +1734,7 @@ function showGhost(s){
   ghostEl.style.setProperty('--wc', S.players[G.turn].color);
   ghostEl.classList.toggle('bad', !G.ghost.ok); ghostEl.hidden = false;
 }
-function humanTurn(){ return G && !G.over && !isAI(G.turn) && !$('#game').hidden && $('#overlay').hidden; }
+function humanTurn(){ return G && !G.over && !paused && !isAI(G.turn) && !$('#game').hidden && $('#overlay').hidden; }
 board.addEventListener('pointermove', e => {
   if (!humanTurn() || G.action!=='wall' || e.pointerType!=='mouse' || G.wallsLeft[G.turn]===0) return;
   showGhost(slotAt(boardPoint(e)));
@@ -1273,6 +1809,8 @@ function endGame(winner, why){
 }
 function goSetup(){
   clearInterval(tickTimer); clearTimeout(aiTimer);
+  paused = false; $('#pause').hidden = true;
+  if (S.music && !bgm.playing) startBgm();
   if (G) G.over = true;
   if (land) setLand(false);
   $('#overlay').hidden = true; $('#game').hidden = true; $('#setup').hidden = false;
@@ -1283,6 +1821,33 @@ function openDialog(html, handlers){
   Object.entries(handlers).forEach(([id,fn]) => { const b = document.getElementById(id); if (b) b.onclick = fn; });
 }
 let pausedLeft = null;
+/* ---- 일시정지 ---- */
+let paused = false, pauseLeft = null, pauseMusic = false;
+function pauseGame(){
+  if (!G || G.over || paused || $('#game').hidden || !$('#overlay').hidden) return;
+  paused = true;
+  clearInterval(tickTimer); clearTimeout(aiTimer);
+  pauseLeft = isAI(G.turn) ? null : Math.max(0, G.deadline - performance.now());
+  pauseMusic = bgm.playing; stopBgm();
+  G.ghost = null; ghostEl.hidden = true;
+  $('#pause').hidden = false; sfx('click');
+  $('#btnResume').focus();
+}
+function resumeGame(){
+  if (!paused) return;
+  paused = false; $('#pause').hidden = true; sfx('click');
+  if (pauseMusic) startBgm();
+  if (pauseLeft == null || pauseLeft < 300) startTurn(true);
+  else { G.deadline = performance.now() + pauseLeft; lastSec = null; tickTimer = setInterval(onTick, 100); onTick(); }
+  updateHUD();
+}
+$('#btnPause').onclick = pauseGame;
+$('#btnResume').onclick = resumeGame;
+$('#btnPauseHome').onclick = goSetup;
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+document.addEventListener('keydown', e => {
+  if (e.key==='p' || e.key==='P' || e.key==='Escape'){ if (paused) resumeGame(); else pauseGame(); }
+});
 $('#btnHome').onclick = () => {
   if (!G || G.over){ goSetup(); return; }
   sfx('click');
