@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFF4CF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="쿼리도">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
@@ -36,7 +40,7 @@ img{max-width:100%}
   --ink:#EFE2BF; --muted:#B9A77E;
   --panel:#E6D5A8; --panel-ink:#2A1C0E; --panel-edge:#6B4520;
   --frame:#4A2E17; --frame-edge:#C9982F;
-  --cellA:#8A806D; --cellB:#7C7361; --cellC:#857A66; --cellD:#776E5C;
+  --cellA:#6E6758; --cellB:#635D4F; --cellC:#6A6253; --cellD:#5E584B;
   --cell-edge:rgba(0,0,0,.35);
   --accent:#C9982F; --accent-ink:#1D140A;
   --danger:#B3261E; --ok:#6E8B3D;
@@ -192,11 +196,12 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 @keyframes bob{to{transform:translate(-50%,-50%) scale(1.25); opacity:.95}}
 .wall{position:absolute; border-radius:999px; border:2px solid var(--ink); box-sizing:border-box; pointer-events:none; z-index:3;
   background:repeating-linear-gradient(45deg, var(--wc) 0 8px, rgba(255,255,255,.55) 8px 12px); animation:drop .28s cubic-bezier(.3,1.6,.5,1)}
-:root[data-gtheme="medieval"] .wall{border-radius:2px; border:1.5px solid #1D1208; background:linear-gradient(var(--wd),#8A5A2B 20%,#6B4220 55%,#4A2C14); box-shadow:0 3px 6px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,220,150,.15)}
-:root[data-gtheme="medieval"] .wall.V{background:linear-gradient(90deg,#8A5A2B,#6B4220 55%,#4A2C14)}
-:root[data-gtheme="medieval"] .wall::after{content:""; position:absolute; inset:28%; border-left:2px solid var(--wc); border-right:2px solid var(--wc); opacity:.9}
-.wall.ghost{opacity:.55; animation:none; z-index:4}
-.wall.ghost.bad{--wc:var(--danger); opacity:.7; border-style:dashed}
+:root[data-gtheme="medieval"] .wall{border-radius:3px; border:2px solid #F3D27A;
+  background:linear-gradient(rgba(255,255,255,.38), rgba(255,255,255,0) 45%, rgba(0,0,0,.35)), var(--wc);
+  box-shadow:0 0 0 2px #120B04, 0 4px 10px rgba(0,0,0,.85), 0 0 12px rgba(243,210,122,.55)}
+:root[data-gtheme="medieval"] .wall.V{background:linear-gradient(90deg, rgba(255,255,255,.38), rgba(255,255,255,0) 45%, rgba(0,0,0,.35)), var(--wc)}
+:root[data-gtheme="medieval"] .wall::after{content:""; position:absolute; inset:22%; border-left:3px solid #F3D27A; border-right:3px solid #F3D27A; opacity:.95}
+:root[data-gtheme="medieval"] .wall.V::after{border:0; border-top:3px solid #F3D27A; border-bottom:3px solid #F3D27A}
 :root[data-gtheme="medieval"] .wall.ghost.bad{background:var(--danger)}
 @keyframes drop{from{transform:scale(1.6); opacity:0}}
 .pawn{
@@ -243,6 +248,10 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .confetti i{position:absolute; top:-20px; width:10px; height:16px; border-radius:3px; animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
+/* ---------- 전체화면 버튼 ---------- */
+.fs-btn .ico{font-size:1.1em; line-height:1}
+@media (max-width:640px){ #gFs .txt{display:none} }
+html.is-land #gFs .txt{display:none}
 /* ---------- 가로모드 ---------- */
 .land-btn{background:var(--accent); color:var(--accent-ink)}
 html.is-land #game{padding-block:6px; padding-inline:10px; gap:6px}
@@ -323,6 +332,14 @@ html.is-rotated body{overflow:hidden}
     </section>
 
     <section class="sec">
+      <h2>배경음악 <span style="font-size:14px;opacity:.7;font-weight:400">· 누르면 미리 들어볼 수 있어요</span></h2>
+      <div class="chips" id="trackChips">
+        <button class="chip" data-track="basic" aria-pressed="true">기본<small>중세 마을 춤곡 · 약 1분 15초</small></button>
+        <button class="chip" data-track="epic" aria-pressed="false">웅장한 행진<small>나팔과 북의 출정곡 · 약 1분 15초</small></button>
+      </div>
+    </section>
+
+    <section class="sec">
       <h2>말 고르기</h2>
       <div class="players">
         <div class="pcard" data-p="0">
@@ -339,6 +356,7 @@ html.is-rotated body{overflow:hidden}
     <div class="snd-row">
       <button class="gbtn" id="sMusic" aria-pressed="true">♪ 배경음악</button>
       <button class="gbtn" id="sSfx" aria-pressed="true">효과음</button>
+      <button class="gbtn fs-btn" id="sFs"><span class="ico">⛶</span> <span class="txt">전체화면</span></button>
     </div>
     <button class="start" id="btnStart">게임 시작!</button>
   </div>
@@ -352,6 +370,7 @@ html.is-rotated body{overflow:hidden}
     <div class="snd">
       <button class="gbtn" id="gMusic" aria-pressed="true">♪</button>
       <button class="gbtn" id="gSfx" aria-pressed="true">효과음</button>
+      <button class="gbtn fs-btn" id="gFs"><span class="ico">⛶</span> <span class="txt">전체화면</span></button>
       <button class="gbtn land-btn" id="btnLand">가로모드</button>
     </div>
   </header>
@@ -387,7 +406,7 @@ const store = {
 };
 
 const S = Object.assign({
-  mode:'solo', level:'normal', theme:'kids', turnSec:30, music:true, sfx:true,
+  mode:'solo', level:'normal', theme:'kids', turnSec:30, music:true, sfx:true, track:'basic',
   players:[{piece:'🦊', color:'#FF9F1C'}, {piece:'🐲', color:'#3D7BFF'}]
 }, store.get('settings', {}));
 
@@ -455,10 +474,21 @@ const MEL = [
 const BASS = [38,36,38,43,41,38,36,38, 45,43,41,45,45,41,43,38];
 const STEP = 0.2;
 const bgm = {playing:false, step:0, next:0, timer:null};
-function bgmStep(i, t){
+const MEL_B = [
+  72,_,71, 69,_,67,  69,_,_, 62,_,_,    65,_,67, 69,_,72,  71,_,69, 67,_,_,
+  70,_,69, 67,_,65,  64,_,65, 67,_,64,  62,_,64, 65,67,69, 69,_,_, 69,_,_,
+  74,_,72, 74,_,69,  72,_,71, 72,_,67,  70,_,69, 70,_,65,  69,_,67, 64,_,_,
+  62,_,65, 69,_,74,  72,_,71, 72,_,76,  74,_,72, 71,_,69,  62,_,_, 62,_,_
+];
+const BASS_B = [36,38,41,36,34,36,38,45, 38,36,34,45,38,36,45,38];
+const B_ORDER = ['A','B','A','B'];          // 한 바퀴 = 64마디
+function bgmStep(gi, t){
+  const sec = Math.floor(gi/96), i = gi%96, part = B_ORDER[sec];
   const bar = Math.floor(i/6), s = i%6;
-  const m = MEL[i]; if (m) lute(bgmGain, m, t, 0.2, 0.85);
-  const b = BASS[bar];
+  const mel = part==='A' ? MEL : MEL_B;
+  const m = mel[i];
+  if (m){ lute(bgmGain, m, t, 0.2, 0.85); if (sec>=2) lute(bgmGain, m+12, t+0.012, 0.06, 0.6); }
+  const b = (part==='A' ? BASS : BASS_B)[bar];
   if (s===0){ lute(bgmGain, b, t, 0.22, 1.1); drum(t, 0.5); }
   if (s===3){ lute(bgmGain, b+7, t, 0.13, 0.6); drum(t, 0.28); }
   if (s===5) noise(bgmGain, t, {dur:0.07, vol:0.06, type:'highpass', f:6500});
@@ -472,10 +502,98 @@ function bgmStep(i, t){
   }
 }
 function drum(t, v){ tone(bgmGain, 120, t, {dur:0.22, vol:v, to:50}); noise(bgmGain, t, {dur:0.06, vol:v*0.25, f:400}); }
-function bgmSched(){ while (bgm.next < ac.currentTime + 0.3){ bgmStep(bgm.step, bgm.next); bgm.next += STEP; bgm.step = (bgm.step+1) % MEL.length; } }
+/* --- 웅장한 행진곡: D단조 4/4, 나팔 선율 + 현악 화음 + 팀파니 + 행진 스네어 + 심벌 --- */
+const E_STEP = 0.24;                       // 8분음표 하나 (약 125bpm)
+const E_CHORDS = [ [38,[62,65,69]], [34,[58,62,65]], [41,[60,65,69]], [36,[60,64,67]],
+                   [38,[62,65,69]], [34,[58,62,65]], [36,[60,64,67]], [33,[57,61,64]] ];
+const E_MEL = {   // 박 위치: [음, 길이(8분음표 수)]
+  0:[62,2], 2:[69,3], 5:[67,1], 6:[69,2],
+  8:[70,4], 12:[69,1], 13:[67,1], 14:[65,2],
+  16:[65,2], 18:[72,3], 21:[70,1], 22:[69,2],
+  24:[67,6], 30:[64,1], 31:[67,1],
+  32:[69,2], 34:[74,3], 37:[72,1], 38:[74,2],
+  40:[77,4], 44:[76,1], 45:[74,1], 46:[72,2],
+  48:[72,2], 50:[76,2], 52:[79,2], 54:[77,1], 55:[76,1],
+  56:[73,4], 60:[76,2], 62:[69,1], 63:[73,1]
+};
+function strings(n, t, dur, vol){
+  [0, 0.006].forEach(dt => {
+    const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n)*(1+dt);
+    const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value = 1400;
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+0.35);
+    g.gain.setValueAtTime(vol,t+dur-0.3); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.connect(fl); fl.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+dur+0.05);
+  });
+}
+function timpani(n, t, vol){
+  tone(bgmGain, mtof(n), t, {dur:0.7, vol, to:mtof(n)*0.92});
+  tone(bgmGain, mtof(n)*1.5, t, {dur:0.25, vol:vol*0.3});
+  noise(bgmGain, t, {dur:0.08, vol:vol*0.35, f:500});
+}
+function snare(t, vol){ noise(bgmGain, t, {dur:0.1, vol, type:'bandpass', f:1900, q:0.8}); tone(bgmGain, 190, t, {type:'triangle', dur:0.05, vol:vol*0.5}); }
+const E_CHORDS_B = [ [34,[62,65,70]], [41,[60,65,69]], [43,[62,67,70]], [38,[62,65,69]],
+                     [34,[62,65,70]], [36,[60,64,67]], [41,[60,65,69]], [33,[57,61,64]] ];
+const E_MEL_B = {
+  0:[70,2], 2:[74,2], 4:[77,4],
+  8:[76,1], 9:[74,1], 10:[72,2], 12:[69,4],
+  16:[67,2], 18:[70,2], 20:[74,3], 23:[72,1],
+  24:[74,6], 30:[72,1], 31:[74,1],
+  32:[77,3], 35:[76,1], 36:[74,2], 38:[72,2],
+  40:[72,2], 42:[76,2], 44:[79,4],
+  48:[81,6], 54:[79,1], 55:[77,1],
+  56:[76,4], 60:[73,2], 62:[76,2]
+};
+// full: 기본 편성 · quiet: 현악만 잔잔하게 쌓아 올림 · grand: 선율을 한 옥타브 위로 겹친 절정
+const E_ORDER = [['A','full'], ['B','full'], ['A','quiet'], ['A','grand'], ['B','grand']];
+function epicStep(gi, t){
+  const sec = Math.floor(gi/64), i = gi%64, [part, style] = E_ORDER[sec];
+  const bar = Math.floor(i/8), s = i%8, [root, ch] = (part==='A' ? E_CHORDS : E_CHORDS_B)[bar];
+  const MELX = part==='A' ? E_MEL : E_MEL_B;
+  if (style==='quiet'){
+    if (s===0){ ch.forEach(n => strings(n-12, t, E_STEP*8, 0.04)); strings(root+12, t, E_STEP*8, 0.035); timpani(root, t, 0.22); }
+    if (s===4) timpani(root, t, 0.12);
+    const m = MELX[i];
+    if (m) strings(m[0], t, E_STEP*m[1]*0.98, 0.05 + bar*0.006);
+    if (bar===7) snare(t, 0.05 + s*0.025);                                // 다음 절정으로 이어지는 스네어 롤
+    if (bar===7) snare(t + E_STEP/2, 0.06 + s*0.025);
+    return;
+  }
+  if (style==='grand' && s===0 && bar%2===0) noise(bgmGain, t, {dur:1.2, vol:0.09, type:'highpass', f:5000});
+  if (s===0){
+    ch.forEach(n => strings(n-12, t, E_STEP*8, 0.035));
+    strings(root+12, t, E_STEP*8, 0.03);
+    if (bar===0 || bar===4) noise(bgmGain, t, {dur:1.4, vol:0.12, type:'highpass', f:5000});
+  }
+  if (s===0 || s===4) brass(bgmGain, root, t, E_STEP*1.6, 0.13);
+  if (s===2 || s===6) brass(bgmGain, root+7, t, E_STEP*0.8, 0.08);
+  if (s===0) timpani(root, t, 0.5);
+  if (s===4) timpani(root+7 > 45 ? root-5 : root+7, t, 0.35);
+  if (bar===7 && s>=4) timpani(root+12, t, 0.18 + (s-4)*0.06);       // 마지막 마디 팀파니 롤
+  if (s===2 || s===6) snare(t, 0.16);
+  if (s===7 || s===3) snare(t, 0.06);
+  if (s===6) snare(t + E_STEP/2, 0.07);
+  const m = MELX[i];
+  if (m){
+    brass(bgmGain, m[0], t, E_STEP*m[1]*0.92, 0.17);
+    brass(bgmGain, m[0]-12, t, E_STEP*m[1]*0.92, 0.07);
+    if (style==='grand') brass(bgmGain, m[0]+12, t, E_STEP*m[1]*0.92, 0.06);
+  }
+}
+const TRACKS = {
+  basic:{step:STEP, len:96*B_ORDER.length, fn:(i,t)=>bgmStep(i,t)},
+  epic:{step:E_STEP, len:64*E_ORDER.length, fn:(i,t)=>epicStep(i,t)}
+};
+function bgmSched(){
+  const tr = TRACKS[bgm.track] || TRACKS.basic;
+  while (bgm.next < ac.currentTime + 0.3){ tr.fn(bgm.step, bgm.next); bgm.next += tr.step; bgm.step = (bgm.step+1) % tr.len; }
+}
+function restartBgm(){
+  stopBgm();
+  setTimeout(startBgm, 450);
+}
 function startBgm(){
   if (!S.music) return; ensureAudio(); if (!ac || bgm.playing) return;
-  bgm.playing = true; bgm.step = 0; bgm.next = ac.currentTime + 0.12;
+  bgm.playing = true; bgm.step = 0; bgm.track = S.track; bgm.next = ac.currentTime + 0.12;
   bgmGain.gain.cancelScheduledValues(ac.currentTime); bgmGain.gain.setValueAtTime(0.28, ac.currentTime);
   bgm.timer = setInterval(bgmSched, 60); bgmSched();
 }
@@ -521,6 +639,7 @@ function renderSetup(){
   $('#levelChips').hidden = S.mode !== 'solo';
   document.querySelectorAll('.theme-card').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme===S.theme));
   document.querySelectorAll('#timeChips .chip').forEach(b => b.setAttribute('aria-pressed', +b.dataset.sec===S.turnSec));
+  document.querySelectorAll('#trackChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.track===S.track));
   $('#p2title').textContent = S.mode==='solo' ? '컴퓨터' : '플레이어 2';
   document.querySelectorAll('.pcard').forEach(card => {
     const p = +card.dataset.p;
@@ -545,6 +664,13 @@ document.querySelectorAll('.pcard').forEach(card => {
 });
 $('#modeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.mode=b.dataset.mode; sfx('click'); saveSettings(); renderSetup(); });
 $('#levelChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.level=b.dataset.level; sfx('click'); saveSettings(); renderSetup(); });
+$('#trackChips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  S.track = b.dataset.track; sfx('click');
+  if (!S.music){ S.music = true; syncSoundBtns(); }
+  saveSettings(); renderSetup(); ensureAudio();
+  if (bgm.playing) restartBgm(); else startBgm();
+});
 $('#timeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.turnSec=+b.dataset.sec; sfx('click'); saveSettings(); renderSetup(); });
 document.querySelector('.theme-row').addEventListener('click', e => { const b = e.target.closest('.theme-card'); if(!b) return; S.theme=b.dataset.theme; applyTheme(); sfx('click'); saveSettings(); renderSetup(); });
 function toggleMusic(){ S.music = !S.music; saveSettings(); if (S.music) startBgm(); else stopBgm(); syncSoundBtns(); }
@@ -759,6 +885,48 @@ new ResizeObserver(fit).observe(stage);
 window.addEventListener('resize', applyRot);
 window.addEventListener('orientationchange', () => setTimeout(applyRot, 200));
 document.addEventListener('fullscreenchange', applyRot);
+document.addEventListener('webkitfullscreenchange', applyRot);
+
+/* ================= 전체화면 ================= */
+let fsUser = false;                      // 사용자가 전체화면 버튼으로 켰는지 (가로모드 해제 때 유지하려고)
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints > 1);
+function isFs(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+async function enterFs(){
+  const el = document.documentElement;
+  try {
+    if (el.requestFullscreen) await el.requestFullscreen({navigationUI:'hide'});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } catch(e){}
+}
+async function exitFs(){
+  try {
+    if (!isFs()) return;
+    if (document.exitFullscreen) await document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch(e){}
+}
+function syncFsBtns(){
+  document.querySelectorAll('.fs-btn').forEach(b => {
+    b.querySelector('.txt').textContent = isFs() ? '전체화면 끄기' : '전체화면';
+    b.setAttribute('aria-label', isFs() ? '전체화면 끄기' : '전체화면');
+  });
+}
+function fsFail(btn){
+  const msg = isIOS ? '아이폰은 공유 → 홈 화면에 추가 후 열면 전체화면이 돼요' : '이 화면에서는 전체화면을 쓸 수 없어요';
+  if (!$('#game').hidden) toast(msg, true);
+  else { const t = btn.querySelector('.txt'); t.textContent = isIOS ? '홈 화면에 추가해 주세요' : '지원 안 됨'; setTimeout(syncFsBtns, 2200); }
+}
+async function toggleFs(e){
+  const btn = e.currentTarget; sfx('click');
+  if (isFs()){ fsUser = false; if (land) await setLand(false); await exitFs(); syncFsBtns(); return; }
+  fsUser = true; await enterFs();
+  setTimeout(() => { if (!isFs()){ fsUser = false; fsFail(btn); } syncFsBtns(); applyRot(); }, 350);
+}
+$('#sFs').onclick = toggleFs; $('#gFs').onclick = toggleFs;
+['fullscreenchange','webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+  if (!isFs()){ fsUser = false; }
+  syncFsBtns();
+}));
 
 /* ================= 가로모드 ================= */
 let land = false;
@@ -783,7 +951,7 @@ async function setLand(on){
     try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape'); } catch(e){}
   } else {
     try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e){}
-    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch(e){}
+    if (!fsUser) await exitFs();
   }
   applyRot();
 }
@@ -993,7 +1161,7 @@ function confetti(main){
   setTimeout(() => box.innerHTML='', 4500);
 }
 
-syncSoundBtns(); renderSetup();
+syncSoundBtns(); syncFsBtns(); renderSetup();
 })();
 </script>
 
