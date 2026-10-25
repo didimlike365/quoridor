@@ -1431,39 +1431,103 @@ function wallValid(ws, pos, o, x, y){
   ws.delete(k); return ok;
 }
 
-/* ================= 컴퓨터 ================= */
-function aiChoose(p){
-  const lvl = S.level, op = 1-p, ws = G.ws;
-  const noise = {easy:1.2, normal:0.35, hard:0.05}[lvl];
-  const moves = legalMoves(G.pos, ws, p);
-  for (const m of moves) if (m.x === GOAL[p]) return {type:'move', ...m};
-  if (lvl==='easy' && Math.random() < 0.3) return {type:'move', ...moves[(Math.random()*moves.length)|0]};
-  let best = null, bestScore = -Infinity;
-  const opD0 = dist(ws, G.pos[op], GOAL[op]);
-  for (const m of moves){
-    const myD = dist(ws, m, GOAL[p]);
-    const sc = opD0 - myD + Math.random()*noise + 0.01;
-    if (sc > bestScore){ bestScore = sc; best = {type:'move', ...m}; }
-  }
-  const useWalls = G.wallsLeft[p] > 0 && (lvl!=='easy' || opD0 <= 3 || Math.random() < 0.15);
-  if (useWalls){
-    const penalty = {easy:1.2, normal:0.7, hard:0.45}[lvl];
-    const myD0 = dist(ws, G.pos[p], GOAL[p]);
-    // 상대가 나보다 앞서거나 비슷할 때 적극적으로 막기
-    const urgency = opD0 <= myD0 ? 0 : (lvl==='hard' ? 0.4 : 0.9);
-    for (const o of ['H','V']) for (let x=0;x<8;x++) for (let y=0;y<8;y++){
-      if (!wallFits(ws,o,x,y)) continue;
-      const k = o+x+','+y; ws.add(k);
-      const opD = dist(ws, G.pos[op], GOAL[op]), myD = dist(ws, G.pos[p], GOAL[p]);
-      ws.delete(k);
-      if (opD===Infinity || myD===Infinity) continue;
-      if (opD <= opD0) continue;
-      const sc = opD - myD - penalty - urgency + Math.random()*noise;
-      if (sc > bestScore){ bestScore = sc; best = {type:'wall', o, x, y}; }
+/* ================= 컴퓨터 =================
+   알파-베타 탐색(네가맥스)으로 몇 수 앞을 내다본다.
+   평가 = (상대 최단거리 − 내 최단거리) + 차례 이점 + 남은 벽 수 차이(벽 1개 = 0.8칸 가치)
+   후보 벽은 상대의 최단 경로를 실제로 막는 자리만 고른다. */
+const AI_CFG = {
+  easy:   {depth:1, noise:1.2,  wallChance:0.3, cand:6,  wallW:0.8},   // 한 수만 보고, 가끔 벽
+  normal: {depth:2, noise:0.25, wallChance:1,   cand:10, wallW:0.8},   // 내 수 + 상대 대응까지
+  hard:   {depth:3, noise:0.02, wallChance:1,   cand:10, wallW:0.8}    // 내 수 → 상대 → 내 수
+};
+function shortestPath(ws, from, gx){
+  const prev = new Int16Array(81).fill(-1), seen = new Uint8Array(81);
+  const start = from.x*9+from.y, q = [start]; seen[start] = 1;
+  for (let h=0; h<q.length; h++){
+    const c = q[h], x = (c/9)|0, y = c%9;
+    if (x === gx){ const path = []; let k = c; while (k !== -1){ path.push(k); k = prev[k]; } return path.reverse(); }
+    for (const [dx,dy] of DIRS){
+      if (!canStep(ws,x,y,dx,dy)) continue;
+      const n = (x+dx)*9 + (y+dy); if (!seen[n]){ seen[n]=1; prev[n]=c; q.push(n); }
     }
+  }
+  return null;
+}
+function aiEval(st, side, cfg){
+  const dMe = dist(st.ws, st.pos[side], GOAL[side]), dOp = dist(st.ws, st.pos[1-side], GOAL[1-side]);
+  let v = (dOp - dMe) + 0.5 + (cfg.wallW||0.2)*(st.wl[side] - st.wl[1-side]);
+  if (st.wl[1-side] === 0 && dMe <= dOp) v += 20;      // 상대 벽이 없고 내가 앞서면 경주에서 이긴다
+  if (st.wl[side] === 0 && dOp < dMe) v -= 20;         // 내 벽이 없고 상대가 앞서면 진다
+  return v;
+}
+function aiActions(st, side, cand, withWalls){
+  const op = 1-side;
+  const moves = legalMoves(st.pos, st.ws, side).map(m => ({type:'move', x:m.x, y:m.y, d:dist(st.ws, m, GOAL[side])}));
+  moves.sort((a,b) => a.d - b.d);
+  if (!withWalls || st.wl[side] <= 0) return moves;
+  const path = shortestPath(st.ws, st.pos[op], GOAL[op]);
+  if (!path) return moves;
+  const base = path.length - 1, seen = new Set(), walls = [];
+  const myBase = dist(st.ws, st.pos[side], GOAL[side]);
+  const tryW = (o,x,y) => {
+    const k = o+x+','+y; if (seen.has(k)) return; seen.add(k);
+    if (!wallFits(st.ws,o,x,y)) return;
+    st.ws.add(k);
+    const dOp = dist(st.ws, st.pos[op], GOAL[op]), dMe = dist(st.ws, st.pos[side], GOAL[side]);
+    st.ws.delete(k);
+    if (dOp === Infinity || dMe === Infinity) return;
+    const gain = (dOp - base) - (dMe - myBase);
+    if (dOp > base) walls.push({type:'wall', o, x, y, gain});
+  };
+  for (let i=0; i+1<path.length && i<8; i++){
+    const a = path[i], b = path[i+1], ax = (a/9)|0, ay = a%9, bx = (b/9)|0, by = b%9;
+    if (ax !== bx){ const x = Math.min(ax,bx); tryW('V',x,ay); tryW('V',x,ay-1); }
+    else { const y = Math.min(ay,by); tryW('H',ax,y); tryW('H',ax-1,y); }
+  }
+  walls.sort((a,b) => b.gain - a.gain);
+  return moves.concat(walls.slice(0, cand));
+}
+function aiApply(st, side, a){
+  if (a.type==='move'){ a.px = st.pos[side].x; a.py = st.pos[side].y; st.pos[side] = {x:a.x, y:a.y}; }
+  else { st.ws.add(a.o+a.x+','+a.y); st.wl[side]--; }
+}
+function aiUndo(st, side, a){
+  if (a.type==='move') st.pos[side] = {x:a.px, y:a.py};
+  else { st.ws.delete(a.o+a.x+','+a.y); st.wl[side]++; }
+}
+function aiSearch(st, side, depth, alpha, beta, cfg){
+  if (st.pos[1-side].x === GOAL[1-side]) return -1000 - depth;   // 방금 둔 상대가 도착
+  if (depth === 0) return aiEval(st, side, cfg);
+  const acts = aiActions(st, side, cfg.cand, true);
+  let best = -Infinity;
+  for (const a of acts){
+    aiApply(st, side, a);
+    const v = -aiSearch(st, 1-side, depth-1, -beta, -alpha, cfg);
+    aiUndo(st, side, a);
+    if (v > best) best = v;
+    if (v > alpha) alpha = v;
+    if (alpha >= beta) break;
   }
   return best;
 }
+function aiPick(state, p, level){
+  const cfg = AI_CFG[level] || AI_CFG.normal;
+  const st = {pos:[{...state.pos[0]}, {...state.pos[1]}], ws:new Set(state.ws), wl:[...state.wallsLeft]};
+  const acts = aiActions(st, p, cfg.cand, Math.random() < cfg.wallChance);
+  for (const a of acts) if (a.type==='move' && a.x === GOAL[p]) return a;   // 바로 도착할 수 있으면 도착
+  let best = null, bestV = -Infinity;
+  for (const a of acts){
+    aiApply(st, p, a);
+    const raw = (st.pos[p].x === GOAL[p]) ? 1000 : -aiSearch(st, 1-p, cfg.depth-1, -Infinity, Infinity, cfg);
+    aiUndo(st, p, a);
+    // 승부가 이미 정해진 수는 노이즈 없이, 같은 점수면 목표에 가까워지는 이동을 우선
+    const decisive = Math.abs(raw) > 500;
+    const v = raw + (decisive ? 0 : Math.random()*cfg.noise) + (a.type==='move' ? -0.05*a.d : 0);
+    if (v > bestV){ bestV = v; best = a; }
+  }
+  return best;
+}
+function aiChoose(p){ return aiPick(G, p, S.level); }
 
 /* ================= 화면 그리기 ================= */
 const board = $('#board');
