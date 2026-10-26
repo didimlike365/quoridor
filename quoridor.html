@@ -17,7 +17,7 @@ img{max-width:100%}
 <title>쿼리도 대결</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&family=Gowun+Dodum&family=Dongle:wght@700&family=Orbitron:wght@700&family=Gugi&family=Yeon+Sung&family=Black+Han+Sans&family=Do+Hyeon&family=Press+Start+2P&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Audiowide&family=Gaegu:wght@700&family=Gowun+Dodum&family=Dongle:wght@700&family=Orbitron:wght@700&family=Gugi&family=Yeon+Sung&family=Black+Han+Sans&family=Do+Hyeon&family=Press+Start+2P&family=MedievalSharp&family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
 /* Layout: 좌(플레이어1 패널) · 가운데 9×9 보드 · 우(플레이어2 패널), 한 화면에 맞추는 대결판 */
 :root{
@@ -399,6 +399,44 @@ html[data-gtheme] .wall.ghost.bad{background:var(--danger)}
 .mini.snow{background:#fff; box-shadow:0 0 0 2px #1B3550}
 .mini.snow i{background:#DCEEFA}.mini.snow i:nth-child(2){background:#E63946}.mini.snow i:nth-child(9){background:#2BA84A}
 
+/* 🏁 네온 레이싱 */
+:root[data-gtheme="racing"]{
+  --ground:#120428; --ink:#FFF0F8; --muted:#FFB3D9;
+  --panel:rgba(22,8,48,.88); --panel-ink:#FFF0F8; --panel-edge:#FF4FA3;
+  --frame:#1A0A35; --frame-edge:#FF4FA3;
+  --cellA:#24104A; --cellB:#2A1356; --cellC:#211046; --cellD:#2D1660; --cell-edge:rgba(255,79,163,.3);
+  --accent:#FFB000; --accent-ink:#1A0A35; --danger:#FF3B5C;
+  --radius:8px; --cell-radius:10%;
+  --f-display:'Audiowide', 'Black Han Sans', sans-serif; --f-body:'Do Hyeon', 'Apple SD Gothic Neo', sans-serif; --f-latin:'Audiowide', sans-serif;
+  color-scheme:dark;
+}
+:root[data-gtheme="racing"] .logo h1{transform:skewX(-12deg); font-style:italic;
+  background:linear-gradient(#FFE14D 10%, #FF7A3D 55%, #FF2E97 90%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 4px 0 #2A0F45) drop-shadow(0 0 18px rgba(255,46,151,.55))}
+:root[data-gtheme="racing"] .logo .sub{color:#FFB000; letter-spacing:.5em; font-style:italic}
+:root[data-gtheme="racing"] .logo .rule{color:#FFE3F1; text-shadow:0 1px 3px #000}
+:root[data-gtheme="racing"] .sec h2{color:#FFE14D; text-shadow:0 2px 6px #000}
+:root[data-gtheme="racing"] :is(.chip,.gbtn,.seg,.rot,.theme-card,.pcard,.dialog){background:rgba(22,8,48,.88); color:var(--panel-ink); border-color:#FF4FA3; box-shadow:0 0 12px rgba(255,79,163,.35)}
+:root[data-gtheme="racing"] .chip[aria-pressed="true"], :root[data-gtheme="racing"] .seg button[aria-pressed="true"], :root[data-gtheme="racing"] .land-btn{background:var(--accent); color:var(--accent-ink)}
+:root[data-gtheme="racing"] .start{transform:skewX(-10deg); box-shadow:0 0 0 2px #1A0A35, 0 0 22px rgba(255,176,0,.6)}
+:root[data-gtheme="racing"] .frame{border-radius:10px; border:2px solid #FF4FA3; background:#1A0A35;
+  box-shadow:0 0 0 3px #1A0A35, 0 0 0 5px #FFB000, 0 0 36px rgba(255,79,163,.6)}
+:root[data-gtheme="racing"] .cell{box-shadow:inset 0 0 0 1px rgba(255,79,163,.35), inset 0 -3px 0 rgba(0,0,0,.35)}
+:root[data-gtheme="racing"] .cell.goal::before{opacity:.5; background:repeating-conic-gradient(#fff 0 25%, #111 0 50%) 0 0/50% 50%}
+:root[data-gtheme="racing"] .cell.goal{box-shadow:inset 0 0 0 2px var(--gc), 0 0 10px var(--gc)}
+:root[data-gtheme="racing"] .wall{border-radius:3px; border:1px solid #fff; background:linear-gradient(var(--wc), #fff 50%, var(--wc)); box-shadow:0 0 8px var(--wc), 0 0 18px var(--wc)}
+:root[data-gtheme="racing"] .wall.V{background:linear-gradient(90deg, var(--wc), #fff 50%, var(--wc))}
+:root[data-gtheme="racing"] .token{border:2px solid #fff; box-shadow:0 0 0 2px #1A0A35, 0 0 14px var(--pc)}
+:root[data-gtheme="racing"] .panel.active{box-shadow:0 0 0 3px var(--pc), 0 0 24px var(--pc)}
+:root[data-gtheme="racing"] .timer .tnum{font-family:var(--f-latin); font-size:17px}
+:root[data-gtheme="racing"] .timer.idle .tnum{font-family:var(--f-body)}
+:root[data-gtheme="racing"] .turnbanner{font-style:italic; text-shadow:0 2px 6px #000}
+:root[data-gtheme="racing"] .hint, :root[data-gtheme="racing"] .music-now{color:#FFE3F1; text-shadow:0 1px 3px #000}
+#fx canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.mini.racing{background:linear-gradient(#FF7A3D, #FF2E97 45%, #2A0F45 46%); box-shadow:0 0 0 2px #FF4FA3}
+.mini.racing i{background:#24104A; box-shadow:inset 0 0 0 1px rgba(255,79,163,.6)}
+.mini.racing i:nth-child(5),.mini.racing i:nth-child(10){background:repeating-conic-gradient(#fff 0 25%, #111 0 50%) 0 0/50% 50%}
+
 /* ⏸ 일시정지 */
 #pause{position:fixed; inset:0; z-index:45; display:grid; place-items:center; padding:16px; text-align:center;
   background-color:var(--ground)}
@@ -652,6 +690,10 @@ html.is-rotated body{overflow:hidden}
           <div class="mini snow"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <b>겨울 눈마을</b><span>펑펑 눈과 얼음 블록</span>
         </button>
+        <button class="theme-card" data-theme="racing" aria-pressed="false">
+          <div class="mini racing"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <b>네온 레이싱</b><span>석양 속 도로를 질주</span>
+        </button>
       </div>
     </section>
 
@@ -743,7 +785,7 @@ const $ = s => document.querySelector(s);
 const PIECES = ['🦊','🐰','🐻','🐸','🐯','🐧','🦄','🐲','♞','♜','♚','♛'];
 const THEME_PIECES = {
   road:['🚓','🚌','🚒','🚑','🚕','🚜'], cafe:['☕','🧁','🍩','🥐','🍰','🧋'], ocean:['🐠','🐙','🐳','🦀','🐢','🐬'],
-  space:['🚀','🛸','🪐','🌙','👽','⭐'], dino:['🦖','🦕','🐊','🦎','🥚','🌋'], snow:['⛄','🐧','🦌','🎅','❄️','🎄']
+  space:['🚀','🛸','🪐','🌙','👽','⭐'], dino:['🦖','🦕','🐊','🦎','🥚','🌋'], snow:['⛄','🐧','🦌','🎅','❄️','🎄'], racing:['🏎️','🏍️','🚗','🚙','🛵','🏁']
 };
 function piecesFor(p){
   const list = [...(THEME_PIECES[S.theme]||[]), ...PIECES];
@@ -765,8 +807,111 @@ const S = Object.assign({
 
 function saveSettings(){ store.set('settings', S); }
 function applyTheme(){ document.documentElement.dataset.gtheme = S.theme; buildFx(); }
+
+/* ---- 네온 레이싱 배경: 석양 아래 도로가 끝없이 다가오는 화면 ---- */
+let raceRAF = 0, raceOn = false;
+function stopRaceBg(){ raceOn = false; cancelAnimationFrame(raceRAF); }
+function startRaceBg(box){
+  const cv = document.createElement('canvas'); box.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  let W = 0, H = 0, dpr = 1, sun = null, hills = null;
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = box.clientWidth; H = box.clientHeight;
+    cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    // 줄무늬 해를 미리 그려 둔다
+    const r = Math.min(W, H) * 0.2, sc = document.createElement('canvas');
+    sc.width = sc.height = Math.ceil(r*2*dpr); const s2 = sc.getContext('2d'); s2.scale(dpr,dpr);
+    const g = s2.createLinearGradient(0,0,0,r*2); g.addColorStop(0,'#FFF27A'); g.addColorStop(.5,'#FF9A3D'); g.addColorStop(1,'#FF2E97');
+    s2.fillStyle = g; s2.beginPath(); s2.arc(r,r,r,0,Math.PI*2); s2.fill();
+    s2.globalCompositeOperation = 'destination-out';
+    for (let i=0;i<7;i++){ const y = r*1.05 + i*i*1.6 + i*r*0.11; s2.fillRect(0, y, r*2, 2 + i*1.4); }
+    sun = {img:sc, r};
+    // 산 모양
+    hills = [];
+    for (let k=0;k<2;k++){ const pts=[]; let x=0; while (x <= W+40){ pts.push([x, (k?0.1:0.16)*Math.random()+ (k?0.05:0.11)]); x += 30 + Math.random()*70; } hills.push(pts); }
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  let phase = 0, last = performance.now();
+  raceOn = true;
+  function frame(now){
+    if (!raceOn){ window.removeEventListener('resize', resize); return; }
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    if (!still) phase = (phase + dt*1.9) % 2;
+    const hz = H*0.52, cx = W/2;
+    // 하늘
+    const sky = ctx.createLinearGradient(0,0,0,hz);
+    sky.addColorStop(0,'#14062E'); sky.addColorStop(.45,'#4A1466'); sky.addColorStop(.8,'#C2266F'); sky.addColorStop(1,'#FF7A5A');
+    ctx.fillStyle = sky; ctx.fillRect(0,0,W,hz);
+    // 해
+    ctx.drawImage(sun.img, cx - sun.r, hz - sun.r*1.35, sun.r*2, sun.r*2);
+    // 산 두 겹
+    hills.forEach((pts, k) => {
+      ctx.beginPath(); ctx.moveTo(0, hz);
+      pts.forEach(([x, h]) => ctx.lineTo(x, hz - h*H));
+      ctx.lineTo(W, hz); ctx.closePath();
+      ctx.fillStyle = k ? '#2A0F45' : '#3B1260'; ctx.fill();
+      ctx.strokeStyle = k ? 'rgba(255,79,163,.7)' : 'rgba(255,176,0,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    // 땅
+    const gd = ctx.createLinearGradient(0,hz,0,H); gd.addColorStop(0,'#2A0A4A'); gd.addColorStop(1,'#0C0320');
+    ctx.fillStyle = gd; ctx.fillRect(0,hz,W,H-hz);
+    const depthY = d => hz + (H - hz) * 0.9 / d;           // 깊이 d(1=가까움) → 화면 y
+    const halfAt = y => (y - hz) / (H - hz) * W * 0.42 + W*0.006;   // 도로 반폭
+    // 바닥 격자 (다가오는 가로선)
+    ctx.lineWidth = 1;
+    for (let k=0; k<26; k++){
+      const d = 0.6 + k*0.5 - (phase%1)*0.5; if (d <= 0.55) continue;
+      const y = depthY(d); if (y > H) continue;
+      ctx.strokeStyle = `rgba(255,79,163,${Math.min(0.9, 0.12 + 1.2/d)})`;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(255,79,163,.45)';
+    for (let i=-14;i<=14;i++){ ctx.beginPath(); ctx.moveTo(cx + i*W*0.004, hz); ctx.lineTo(cx + i*W*0.16, H); ctx.stroke(); }
+    // 도로
+    ctx.beginPath(); ctx.moveTo(cx - halfAt(hz), hz); ctx.lineTo(cx + halfAt(hz), hz); ctx.lineTo(cx + halfAt(H), H); ctx.lineTo(cx - halfAt(H), H); ctx.closePath();
+    ctx.fillStyle = '#1B0C33'; ctx.fill();
+    ctx.strokeStyle = '#FF4FA3'; ctx.lineWidth = 3; ctx.shadowColor = '#FF4FA3'; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.moveTo(cx - halfAt(hz), hz); ctx.lineTo(cx - halfAt(H), H); ctx.moveTo(cx + halfAt(hz), hz); ctx.lineTo(cx + halfAt(H), H); ctx.stroke();
+    ctx.shadowBlur = 0;
+    // 가운데 차선 (다가오는 점선)
+    ctx.fillStyle = '#FFE14D';
+    for (let k=0; k<20; k++){
+      const d1 = 0.55 + k*1.0 - phase*0.5*2, d2 = d1 + 0.45; if (d2 <= 0.5) continue;
+      const y1 = depthY(Math.max(d1,0.5)), y2 = depthY(d2); if (y2 > H) continue;
+      const w1 = (y1 - hz)/(H - hz)*W*0.012 + 0.5, w2 = (y2 - hz)/(H - hz)*W*0.012 + 0.5;
+      ctx.beginPath(); ctx.moveTo(cx - w2, y2); ctx.lineTo(cx + w2, y2); ctx.lineTo(cx + w1, Math.min(y1,H)); ctx.lineTo(cx - w1, Math.min(y1,H)); ctx.closePath(); ctx.fill();
+    }
+    // 길가 네온 기둥
+    for (let k=0; k<14; k++){
+      const d = 0.6 + k*1.0 - phase*0.5*2; if (d <= 0.6) continue;
+      const y = depthY(d); if (y > H + 40) continue;
+      const hw = halfAt(Math.min(y,H*1.5)) * 1.18, ph = (y - hz) * 0.9, lw = Math.max(1, (y-hz)/(H-hz)*7);
+      [-1, 1].forEach(sd => {
+        const x = cx + sd*hw;
+        ctx.strokeStyle = sd < 0 ? '#22E5FF' : '#FFB000'; ctx.lineWidth = lw; ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - ph); ctx.stroke();
+      });
+    }
+    ctx.shadowBlur = 0;
+    // 속도선
+    if (!still){
+      ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 2;
+      for (let i=0;i<10;i++){ const a = (i/10)*Math.PI + 0.15, r0 = ((phase*0.5 + i*0.37) % 1) * W * 0.7;
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(a)*r0, hz + Math.sin(a)*r0*0.5); ctx.lineTo(cx + Math.cos(a)*(r0+60), hz + Math.sin(a)*(r0+60)*0.5); ctx.stroke(); }
+    }
+    if (still){ raceOn = false; window.removeEventListener('resize', resize); return; }
+    raceRAF = requestAnimationFrame(frame);
+  }
+  raceRAF = requestAnimationFrame(frame);
+}
+
 function buildFx(){
   const box = document.getElementById('fx'); if (!box) return;
+  stopRaceBg();
   box.innerHTML = '';
   const R = (a,b) => a + Math.random()*(b-a);
   const add = (cls, css, txt) => { const e = document.createElement('i'); e.className = 'fx '+cls; Object.assign(e.style, css); if (txt) e.textContent = txt; box.appendChild(e); };
@@ -778,6 +923,7 @@ function buildFx(){
     for (let i=0;i<2;i++) add('shoot', {left:R(60,100)+'%', top:R(0,35)+'%', animationDuration:R(7,11)+'s', animationDelay:R(0,6)+'s'});
   }
   if (th==='dino') for (let i=0;i<12;i++) add('fall leaf', {left:R(0,100)+'%', fontSize:R(18,30)+'px', animationDuration:R(9,17)+'s', animationDelay:-R(0,17)+'s', '--dx':R(-120,120)+'px', '--rot':R(180,720)+'deg'}, i%3 ? '🍃' : '🌿');
+  if (th==='racing') startRaceBg(box);
   if (th==='snow') for (let i=0;i<55;i++){ const z=R(3,9); add('fall flake', {left:R(0,100)+'%', width:z+'px', height:z+'px', opacity:R(.5,1), animationDuration:R(7,18)+'s', animationDelay:-R(0,18)+'s', '--dx':R(-80,80)+'px'}); }
 }
 applyTheme();
@@ -1186,17 +1332,61 @@ const SONG_SNOW = makeSong({ step:0.19, spb:8, order:['A','B','A','B','A','B'],
   lead:(n,t,dur,{sec}) => { bell(bgmGain, n+12, t, 0.1, Math.max(0.5,dur)); if (sec>=2) sine(bgmGain, n, t, dur, 0.04); }
 });
 
+/* --- 네온 질주: A단조 130bpm 신스웨이브 (16분 베이스, 4비트 킥, 큰 스네어, 톱니 리드 + 메아리) --- */
+function sawLead(n, t, dur, vol){
+  [-0.006, 0.006].forEach(dt => {
+    const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n)*(1+dt);
+    const fl = ac.createBiquadFilter(); fl.type='lowpass'; fl.frequency.setValueAtTime(1200,t); fl.frequency.linearRampToValueAtTime(3200,t+0.08);
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+0.02);
+    g.gain.setValueAtTime(vol,t+dur*0.85); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.connect(fl); fl.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+dur+0.05);
+  });
+}
+const RV = {Am:[57,60,64], F:[57,60,65], C:[55,60,64], G:[55,59,62], Em:[55,59,64], E:[56,59,64]};
+const SONG_RACING = makeSong({ step:0.115, spb:16, order:['A','B','A','B','C','A','B'],
+  chords:{A:[[33,RV.Am],[33,RV.Am],[29,RV.F],[29,RV.F],[36,RV.C],[36,RV.C],[31,RV.G],[31,RV.G]],
+          B:[[29,RV.F],[31,RV.G],[33,RV.Am],[33,RV.Am],[29,RV.F],[31,RV.G],[28,RV.E],[28,RV.E]],
+          C:[[33,RV.Am],[33,RV.Am],[29,RV.F],[29,RV.F],[36,RV.C],[36,RV.C],[31,RV.G],[28,RV.E]]},
+  mel:{A:{0:[76,4],4:[79,4],8:[81,6],14:[79,2],16:[76,8],24:[72,4],28:[74,4], 32:[77,4],36:[76,4],40:[74,4],44:[72,4],48:[69,12],60:[72,4],
+          64:[76,4],68:[79,4],72:[84,6],78:[83,2],80:[79,8],88:[76,4],92:[79,4], 96:[83,6],102:[81,2],104:[79,8],112:[74,8],120:[71,4],124:[74,4]},
+       B:{0:[81,4],4:[84,4],8:[81,4],12:[77,4], 16:[79,4],20:[83,4],24:[86,8], 32:[84,6],38:[83,2],40:[81,8],48:[76,8],56:[79,8],
+          64:[77,4],68:[81,4],72:[84,8], 80:[86,6],86:[84,2],88:[83,8], 96:[83,8],104:[80,8],112:[76,16]}},
+  beat:({t,s,bar,root,voi,part}) => {
+    const st = 0.115;
+    // 16분음표 옥타브 베이스
+    tone(bgmGain, mtof(root + (s%2 ? 12 : 0) + 12), t, {type:'sawtooth', dur:0.1, vol:0.09, lp:900});
+    // 킥 · 스네어 · 하이햇
+    if (s%4===0) tone(bgmGain, 150, t, {dur:0.2, vol:0.5, to:42});
+    if (s===4 || s===12){ noise(bgmGain, t, {dur:0.3, vol:0.24, type:'bandpass', f:1700, q:0.6}); tone(bgmGain, 210, t, {type:'triangle', dur:0.08, vol:0.18}); }
+    if (s%4===2) noise(bgmGain, t, {dur:0.07, vol:0.07, type:'highpass', f:7500});
+    else noise(bgmGain, t, {dur:0.02, vol:0.025, type:'highpass', f:9000});
+    // 패드
+    if (s===0 && bar%2===0) voi.forEach(n => strings(n, t, st*32, 0.018));
+    if (part==='C'){
+      // 숨 고르기 → 다시 가속: 아르페지오가 점점 커지고 마지막 마디는 스네어 롤 + 상승음
+      tone(bgmGain, mtof(voi[s%3] + 12 + (s%6>2 ? 12 : 0)), t, {type:'square', dur:0.09, vol:0.02 + bar*0.008, lp:3000});
+      if (bar===7) noise(bgmGain, t, {dur:0.06, vol:0.06 + s*0.012, type:'bandpass', f:1800, q:0.7});
+      if (bar===6 && s===0){ const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); f.type='bandpass'; f.Q.value=2;
+        const n = ac.createBufferSource(); n.buffer = noiseBuf; f.frequency.setValueAtTime(400,t); f.frequency.exponentialRampToValueAtTime(6000,t+st*32);
+        g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.12,t+st*32); n.connect(f); f.connect(g); g.connect(bgmGain); n.start(t); n.stop(t+st*32+0.02); }
+      return;
+    }
+    if (bar===7 && s>=12) noise(bgmGain, t, {dur:0.06, vol:0.1, type:'bandpass', f:1800, q:0.7});
+  },
+  lead:(n,t,dur,{sec}) => { sawLead(n, t, dur*0.95, 0.06); sawLead(n, t + 0.115*3, dur*0.8, 0.018); if (sec>=5) sawLead(n+12, t, dur*0.9, 0.02); }
+});
+
 const TRACKS = {
   kids:{step:K_STEP, len:64*K_ORDER.length, fn:(i,t)=>kidsStep(i,t)},
   basic:{step:STEP, len:96*B_ORDER.length, fn:(i,t)=>bgmStep(i,t)},
   epic:{step:E_STEP, len:64*E_ORDER.length, fn:(i,t)=>epicStep(i,t)},
   arcade:{step:A_STEP, len:64*A_ORDER.length, fn:(i,t)=>arcadeStep(i,t)},
   road:{step:R_STEP, len:64*R_ORDER.length, fn:(i,t)=>roadStep(i,t)},
-  cafe:SONG_CAFE, ocean:SONG_OCEAN, space:SONG_SPACE, dino:SONG_DINO, snow:SONG_SNOW
+  cafe:SONG_CAFE, ocean:SONG_OCEAN, space:SONG_SPACE, dino:SONG_DINO, snow:SONG_SNOW, racing:SONG_RACING
 };
-const TRACK_ORDER = ['kids','basic','epic','arcade','road','cafe','ocean','space','dino','snow'];
-const TRACK_NAME = {kids:'놀이터 동요', basic:'중세 마을 춤곡', epic:'웅장한 행진', arcade:'8비트 오락실', road:'부릉부릉 드라이브', cafe:'카페 보사노바', ocean:'몽글몽글 바닷속', space:'별빛 우주 여행', dino:'쿵쿵 정글 탐험', snow:'딸랑딸랑 눈마을'};
-const THEME_TRACK = {kids:'kids', medieval:'basic', arcade:'arcade', road:'road', cafe:'cafe', ocean:'ocean', space:'space', dino:'dino', snow:'snow'};
+const TRACK_ORDER = ['kids','basic','epic','arcade','road','cafe','ocean','space','dino','snow','racing'];
+const TRACK_NAME = {kids:'놀이터 동요', basic:'중세 마을 춤곡', epic:'웅장한 행진', arcade:'8비트 오락실', road:'부릉부릉 드라이브', cafe:'카페 보사노바', ocean:'몽글몽글 바닷속', space:'별빛 우주 여행', dino:'쿵쿵 정글 탐험', snow:'딸랑딸랑 눈마을', racing:'네온 질주'};
+const THEME_TRACK = {kids:'kids', medieval:'basic', arcade:'arcade', road:'road', cafe:'cafe', ocean:'ocean', space:'space', dino:'dino', snow:'snow', racing:'racing'};
 function playTrack(name){
   S.track = name; saveSettings(); syncTrackUI();
   if (!S.music) return;
@@ -1275,6 +1465,14 @@ function drum2(t){ tone(sfxGain,110,t,{dur:0.4,vol:0.6,to:45}); noise(sfxGain,t,
 /* 추가 배경 효과음 */
 function sweep(f1, f2, t, dur, vol, type='sine', lp=null){ tone(sfxGain, f1, t, {type, dur, vol, to:f2, lp}); }
 const TSFX = {
+  racing:{
+    move:t => { tone(sfxGain,110,t,{type:'sawtooth',dur:0.22,vol:0.22,to:260,lp:900}); },
+    jump:t => { tone(sfxGain,120,t,{type:'sawtooth',dur:0.35,vol:0.22,to:420,lp:1200}); noise(sfxGain,t+0.1,{dur:0.35,vol:0.2,type:'bandpass',f:2500,q:0.8}); },
+    wall:t => { tone(sfxGain,620,t,{type:'square',dur:0.12,vol:0.12,lp:2500}); tone(sfxGain,930,t,{type:'square',dur:0.1,vol:0.08,lp:2500}); noise(sfxGain,t,{dur:0.15,vol:0.3,f:2200}); },
+    start:t => { [0,0.35,0.7].forEach(d=>tone(sfxGain,660,t+d,{type:'square',dur:0.12,vol:0.12,lp:3000})); tone(sfxGain,1320,t+1.05,{type:'square',dur:0.45,vol:0.14,lp:3000}); tone(sfxGain,90,t+1.05,{type:'sawtooth',dur:0.6,vol:0.22,to:300,lp:900}); },
+    win:t => { [69,72,76,81,76,81,84].forEach((n,i)=>tone(sfxGain,mtof(n),t+i*0.1,{type:'sawtooth',dur:i===6?0.8:0.1,vol:0.1,lp:3000})); },
+    lose:t => { tone(sfxGain,300,t,{type:'sawtooth',dur:1.2,vol:0.2,to:50,lp:900}); }
+  },
   cafe:{
     move:t => { tone(sfxGain,1250,t,{type:'triangle',dur:0.05,vol:0.2}); tone(sfxGain,620,t,{dur:0.12,vol:0.18}); },
     jump:t => { tone(sfxGain,1250,t,{type:'triangle',dur:0.05,vol:0.2}); sweep(500,950,t+0.05,0.22,0.15); tone(sfxGain,1250,t+0.3,{type:'triangle',dur:0.05,vol:0.2}); },
