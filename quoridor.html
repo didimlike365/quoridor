@@ -1038,7 +1038,7 @@ function startCubeBg(box){
   const cv = document.createElement('canvas'); box.appendChild(cv);
   const ctx = cv.getContext('2d');
   const st = {W:0, H:0, cubes:[], t0:-1e9, raf:0, alive:true};
-  const SIZE = 46, CW = SIZE*Math.sqrt(3), FLIP = 260, SPREAD = 900;
+  const SIZE = 146, CW = SIZE*Math.sqrt(3), FLIP = 260, SPREAD = 900;   // 큐브 크게 → 개수 약 1/10
   const randFace = () => { if (Math.random() < 0.15){ const c = Math.random()*6|0; return Array(9).fill(c); } return Array.from({length:9}, () => Math.random()*6|0); };
   const randCube = () => [randFace(), randFace(), randFace()];
   function layout(){
