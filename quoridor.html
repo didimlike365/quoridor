@@ -2466,9 +2466,9 @@ function wallValid(ws, pos, o, x, y){
    · 공격 벽: 상대 최단 경로 위에서 길을 실제로 늘리는 자리
    · 수비 벽(어려움): 상대가 내 길을 크게 막을 수 있는 자리를 미리 가로질러 막아 둔다 */
 const AI_CFG = {
-  easy:   {depth:1, noise:1.2,  wallChance:0.3, cand:5,  wallW:0.8, threat:0,    defend:0},
-  normal: {depth:2, noise:0.2,  wallChance:1,   cand:10, wallW:0.8, threat:0.3,  defend:0},
-  hard:   {depth:3, noise:0.02, wallChance:1,   cand:14, wallW:0.8, threat:0.4,  defend:4}
+  easy:   {depth:1, noise:0.9,  wallChance:0.3, cand:5,  wallW:0.8, threat:0,    defend:0,   antiBack:1.2},
+  normal: {depth:2, noise:0.1,  wallChance:1,   cand:10, wallW:0.8, threat:0.3,  defend:0,   antiBack:0.9},
+  hard:   {depth:3, noise:0.02, wallChance:1,   cand:14, wallW:0.8, threat:0.4,  defend:4,   antiBack:0.9}
 };
 function fStep(st, x, y, dx, dy){
   const nx = x+dx, ny = y+dy;
@@ -2625,6 +2625,7 @@ function aiState(state){
 }
 function aiPick(state, p, level){
   const cfg = AI_CFG[level] || AI_CFG.normal;
+  const hist = (state.hist && state.hist[p]) || [];
   const st = aiState(state);
   const acts = aiActions(st, p, cfg, Math.random() < cfg.wallChance);
   for (const a of acts) if (a.type==='move' && a.x === GOAL[p]) return a;
@@ -2634,7 +2635,13 @@ function aiPick(state, p, level){
     const raw = -aiSearch(st, 1-p, cfg.depth-1, -Infinity, Infinity, cfg);
     aiUndo(st, p, a);
     const decisive = Math.abs(raw) > 500;
-    const v = raw + (decisive ? 0 : Math.random()*cfg.noise) + (a.type==='move' ? -0.05*a.d : 0);
+    // 되돌아가기 방지: 바로 전에 있던 칸으로 돌아가면 크게, 최근에 지나온 칸이면 조금 감점 (사람처럼 갈피를 잡게)
+    let rep = 0;
+    if (a.type==='move' && hist.length){
+      const k = hist.findIndex(h => h.x===a.x && h.y===a.y);
+      if (k >= 0) rep = (k === hist.length-1) ? cfg.antiBack : cfg.antiBack*0.5;
+    }
+    const v = raw - (decisive ? 0 : rep) + (decisive ? 0 : Math.random()*cfg.noise) + (a.type==='move' ? -0.05*a.d : 0);
     if (v > bestV){ bestV = v; best = a; }
   }
   return best;
@@ -2882,6 +2889,7 @@ function afterAction(p){
   startTurn();
 }
 function doMove(p, m){
+  G.hist[p].push({...G.pos[p]}); if (G.hist[p].length > 6) G.hist[p].shift();   // 컴퓨터 되돌아가기 방지용 최근 위치
   G.pos[p] = {x:m.x, y:m.y};
   if (S.theme==='piano') pianoAdvance();
   sfx(m.jump ? 'jump' : 'move');
@@ -2970,7 +2978,7 @@ document.addEventListener('keydown', e => {
 /* ================= 시작 / 끝 ================= */
 function newGame(){
   G = { pos:[{x:0,y:4},{x:8,y:4}], ws:new Set(), walls:[], wallsLeft:[10,10], strikes:[0,0],
-        turn:0, over:false, action:'move', orient:'H', ghost:null, turns:0, legal:[] };
+        turn:0, over:false, action:'move', orient:'H', ghost:null, turns:0, legal:[], hist:[[],[]] };
   $('#setup').hidden = true; $('#game').hidden = false; $('#overlay').hidden = true;
   $('#confetti').innerHTML = '';
   buildBoard(); buildPanels(); fit(); drawPawns();
