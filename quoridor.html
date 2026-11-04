@@ -2433,59 +2433,72 @@ const SONG_MAZE = makeSong({ step:0.12, spb:16, order:['A','A','B','A','C','B'],
   lead:(n,t,dur,{sec}) => { chip(n, t, 0.12*dur/0.12*0.95, 0.07); chip(n+12, t + 0.12*3, dur*0.9, 0.02); }
 });
 
-/* --- 심해의 그림자 (바닷속 새 곡): 고요한 심해 → 낮은 맥박이 점점 빨라지며 다가옴 → "쾅!" 하고 터진 뒤 다시 고요
+/* --- 심해의 그림자 (바닷속 새 곡): 고요한 심해 → 맥박이 점점 빨라지며 다가옴 → "쾅!" → 다시 고요
+   휴대폰 스피커에서도 잘 들리도록 모든 악기를 중음역(첼로·피아노·종·현악·금관)에 배치
    한 바퀴 24초 × 3번, 바퀴가 갈수록 고요한 구간이 짧아지고 더 크게 터진다 --- */
 const DP_STEP = 0.1, DP_CYCLE = 240;
-function deepPulse(t, vol, low){
-  // 낮은 현악기 피치카토 같은 '둥'
-  const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(low ? 26 : 38);
-  const f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(700,t); f.frequency.exponentialRampToValueAtTime(140,t+0.25);
-  const g = ac.createGain(); env(g, t, 0.005, vol, 0.35);
-  o.connect(f); f.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+0.45);
-  tone(bgmGain, mtof(low ? 26 : 38), t, {dur:0.3, vol:vol*0.6});
+function cello(n, t, vol, dur=0.32){
+  // 짧게 끊어 켜는 첼로: 톱니파 두 개 + 필터가 닫히며 '둥'
+  [0, 0.004].forEach(dt => {
+    const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n)*(1+dt);
+    const f = ac.createBiquadFilter(); f.type='lowpass'; f.Q.value = 3;
+    f.frequency.setValueAtTime(2600,t); f.frequency.exponentialRampToValueAtTime(500,t+dur);
+    const g = ac.createGain(); env(g, t, 0.006, vol, dur);
+    o.connect(f); f.connect(g); g.connect(bgmGain); o.start(t); o.stop(t+dur+0.1);
+  });
+}
+function deepPulse(t, vol, accent){
+  cello(50, t, vol); cello(62, t, vol*0.55);                              // D3 + D4 옥타브로 또렷하게
+  if (accent){ tone(bgmGain, 98, t, {dur:0.35, vol:vol*1.2, to:70}); noise(bgmGain, t, {dur:0.08, vol:vol*0.5, f:900}); }   // 팀파니 '쿵'
 }
 function tremolo(notes, t, dur, vol, rate){
-  // 바이올린 트레몰로: 톱니파 화음을 빠르게 떨리게
   const lfo = ac.createOscillator(); lfo.frequency.value = rate;
   const depth = ac.createGain(); depth.gain.value = vol*0.5;
-  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol*0.5,t+dur*0.8); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+dur*0.7); g.gain.linearRampToValueAtTime(0.0001,t+dur);
   lfo.connect(depth); depth.connect(g.gain);
-  const f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value = 1600;
+  const f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value = 3200;
   notes.forEach(n => { const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n); o.detune.value = (Math.random()*2-1)*8; o.connect(f); o.start(t); o.stop(t+dur+0.05); });
   f.connect(g); g.connect(bgmGain); lfo.start(t); lfo.stop(t+dur+0.05);
 }
 function sonar(t, vol){
   tone(bgmGain, 1180, t, {dur:1.6, vol, a:0.003});
-  tone(bgmGain, 1180, t+0.45, {dur:1.2, vol:vol*0.35, a:0.003});
-  tone(bgmGain, 1180, t+0.9, {dur:0.9, vol:vol*0.12, a:0.003});
+  tone(bgmGain, 1180, t+0.45, {dur:1.2, vol:vol*0.4, a:0.003});
+  tone(bgmGain, 1180, t+0.9, {dur:0.9, vol:vol*0.15, a:0.003});
 }
+// 고요한 구간의 으스스한 종 선율 (레 파 미 도# 레 시♭ 라)
+const DP_MEL = {5:[74,8], 13:[77,8], 21:[76,12], 33:[73,10], 45:[74,8], 53:[70,8], 61:[69,16]};
+// 다가오는 구간 위에서 한 음씩 올라가는 높은 현악 (긴장감)
+const DP_RISE = [74, 75, 77, 78, 80, 81];
 function deepStep(gi, t){
   const cyc = Math.floor(gi / DP_CYCLE), i = gi % DP_CYCLE;
   const calmEnd = [80, 60, 40][cyc] ?? 60, hit = 200, big = cyc >= 2;
-  // 깔리는 심해 드론 (D · A 아주 낮게)
-  if (i === 0){ strings(26, t, DP_STEP*DP_CYCLE*0.95, 0.05); strings(33, t, DP_STEP*DP_CYCLE*0.95, 0.03); }
+  if (i === 0){ strings(50, t, DP_STEP*DP_CYCLE*0.9, 0.06); strings(57, t, DP_STEP*DP_CYCLE*0.9, 0.04); }   // 깔리는 현악 (레·라)
   if (i < calmEnd){
-    if (i % 40 === 5) sonar(t, 0.06);
-    if (i % 23 === 11) tone(bgmGain, 300 + Math.random()*400, t, {dur:0.12, vol:0.04, to:1400});   // 뽀글
+    if (i % 40 === 2) sonar(t, 0.16);
+    const m = DP_MEL[i - (80 - calmEnd)];
+    if (m){ bell(bgmGain, m[0], t, 0.24, m[1]*DP_STEP*1.6); pianoTone(bgmGain, m[0]-12, t, 0.13, m[1]*DP_STEP*1.4); }
+    if (i % 23 === 11) tone(bgmGain, 500 + Math.random()*400, t, {dur:0.12, vol:0.08, to:1600});   // 뽀글
     return;
   }
   if (i < hit){
-    // 다가오는 맥박: 간격이 8칸 → 1칸으로 점점 좁아짐, 소리도 점점 커짐
-    const k = (i - calmEnd) / (hit - calmEnd), gap = Math.max(1, Math.round(8 - k*7.5));
-    if ((i - calmEnd) % gap === 0) deepPulse(t, 0.18 + k*0.32, (i - calmEnd) % (gap*4) === 0);
-    if (k > 0.45 && (i - calmEnd) % 20 === 0) tremolo([50,53,56,59], t, DP_STEP*20, 0.02 + (k-0.45)*0.09, 9 + k*8);
-    if (k > 0.75 && i % 2 === 0) noise(bgmGain, t, {dur:0.05, vol:0.02 + (k-0.75)*0.12, type:'bandpass', f:1800, q:0.8});
-    if (i === hit - 4) tone(bgmGain, 200, t, {type:'sawtooth', dur:0.4, vol:0.06, to:900, lp:2500});   // 쾅 직전 솟구침
+    const k = (i - calmEnd) / (hit - calmEnd), gap = Math.max(1, Math.round(8 - k*7.5)), j = i - calmEnd;
+    if (j % gap === 0) deepPulse(t, 0.2 + k*0.2, j % (gap*4) === 0);
+    // 높은 현악이 한 음씩 올라가며 떨림
+    if (k > 0.3 && j % 20 === 0){ const step = Math.min(DP_RISE.length-1, Math.floor((k-0.3)/0.7*DP_RISE.length)); tremolo([DP_RISE[step], DP_RISE[step]-12], t, DP_STEP*20, 0.08 + k*0.1, 10 + k*8); }
+    if (k > 0.7 && i % 2 === 0) noise(bgmGain, t, {dur:0.05, vol:0.04 + (k-0.7)*0.2, type:'bandpass', f:1800, q:0.8});   // 스네어 롤
+    if (i === hit - 5) tone(bgmGain, 300, t, {type:'sawtooth', dur:0.45, vol:0.09, to:1400, lp:3500});   // 솟구침
     return;
   }
   if (i === hit){
-    // 쾅! 낮은 금관 불협화음 + 큰북 + 심벌
-    [38,41,44,47, big ? 50 : 26].forEach(n => brass(bgmGain, n, t, big ? 1.4 : 1.0, 0.11));
-    tone(bgmGain, 60, t, {dur:1.6, vol:0.8, to:28}); noise(bgmGain, t, {dur:1.8, vol:0.3, f:3000});
-    if (big){ tone(bgmGain, 55, t+0.45, {dur:1.2, vol:0.6, to:26}); [38,44].forEach(n => brass(bgmGain, n, t+0.45, 0.9, 0.1)); }
+    // 쾅! 금관 불협화음 + 높은 현악 찌르기 + 큰북 + 심벌
+    [50,53,56,62].forEach(n => brass(bgmGain, n, t, big ? 1.3 : 0.9, 0.14));
+    [74,77,80].forEach(n => brass(bgmGain, n, t, 0.25, 0.07));
+    tone(bgmGain, 98, t, {dur:1.2, vol:0.6, to:55}); noise(bgmGain, t, {dur:1.8, vol:0.3, f:3500});
+    if (big){ [50,56].forEach(n => brass(bgmGain, n, t+0.45, 0.9, 0.13)); tone(bgmGain, 98, t+0.45, {dur:1, vol:0.5, to:55}); }
     return;
   }
-  if (i === hit + 18 || i === hit + 24) deepPulse(t, 0.22, true);      // 쿵… 쿵… 멀어지는 심장
+  if (i === hit + 18 || i === hit + 24) deepPulse(t, 0.16, true);      // 쿵… 쿵… 멀어짐
+  if (i === hit + 30) bell(bgmGain, 69, t, 0.12, 1.5);
 }
 const SONG_DEEP = {step:DP_STEP, len:DP_CYCLE*3, fn:(i,t)=>deepStep(i,t)};
 
