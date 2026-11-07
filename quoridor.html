@@ -570,6 +570,20 @@ html[data-gtheme] .wall.ghost.bad{background:var(--danger)}
 .mini.racing i{background:#24104A; box-shadow:inset 0 0 0 1px rgba(255,79,163,.6)}
 .mini.racing i:nth-child(5),.mini.racing i:nth-child(10){background:repeating-conic-gradient(#fff 0 25%, #111 0 50%) 0 0/50% 50%}
 
+/* ▦ 퀵소 판 (5×5) */
+.board.qx .cell{width:17.4%; height:17.4%; transition:transform .15s}
+.board.qx .cell .token{position:absolute; inset:9%; width:auto; height:auto; font-size:calc(var(--bs) * 0.085); transition:transform .25s cubic-bezier(.3,1.3,.6,1)}
+.board.qx .cell.pick{cursor:pointer; box-shadow:inset 0 0 0 calc(var(--bs) * .008) var(--hc), inset 0 -3px 0 var(--cell-edge); animation:qpick 1s ease-in-out infinite alternate}
+@keyframes qpick{to{filter:brightness(1.18)}}
+.board.qx .cell.sel{z-index:4; transform:scale(1.07); box-shadow:0 0 0 calc(var(--bs) * .01) var(--accent), 0 8px 18px rgba(0,0,0,.35)}
+.board.qx .cell.tgt{cursor:pointer}
+.board.qx .cell.tgt::after{content:attr(data-arrow); position:absolute; inset:0; display:grid; place-items:center; z-index:3;
+  font-size:calc(var(--bs) * 0.09); font-weight:900; color:var(--accent-ink); background:color-mix(in srgb, var(--accent) 78%, transparent);
+  border-radius:inherit; animation:bob 0.8s ease-in-out infinite alternate; transform:none; width:auto; height:auto; left:0; top:0; opacity:1; border:0}
+.board.qx .cell.winline{box-shadow:0 0 0 calc(var(--bs) * .012) #FFD23F, 0 0 22px #FFD23F; z-index:4}
+.board.qx .cell.lastin{box-shadow:inset 0 0 0 calc(var(--bs) * .006) var(--accent), inset 0 -3px 0 var(--cell-edge)}
+html[data-game="quixo"] #game .seg, html[data-game="quixo"] #btnRot{display:none}
+
 /* ⏸ 일시정지 */
 #pause{position:fixed; inset:0; z-index:45; display:grid; place-items:center; padding:16px; text-align:center;
   background-color:var(--ground)}
@@ -779,6 +793,14 @@ html.is-rotated body{overflow:hidden}
     </div>
 
     <section class="sec">
+      <h2>게임 종류</h2>
+      <div class="chips" id="gameChips">
+        <button class="chip" data-game="quoridor" aria-pressed="true">쿼리도<small>벽으로 막고 먼저 도착</small></button>
+        <button class="chip" data-game="quixo" aria-pressed="false">퀵소<small>밀어 넣어 5개 한 줄</small></button>
+      </div>
+    </section>
+
+    <section class="sec">
       <h2>게임 방법</h2>
       <div class="chips" id="modeChips">
         <button class="chip" data-mode="solo" aria-pressed="true">혼자하기<small>컴퓨터와 대결</small></button>
@@ -872,11 +894,11 @@ html.is-rotated body{overflow:hidden}
       <h2>말 고르기</h2>
       <div class="players">
         <div class="pcard" data-p="0">
-          <div class="ph"><div class="pv" id="prev0"></div><div><b>플레이어 1</b><br><small>왼쪽에서 출발 → 오른쪽 끝</small></div></div>
+          <div class="ph"><div class="pv" id="prev0"></div><div><b>플레이어 1</b><br><small class="sidehint">왼쪽에서 출발 → 오른쪽 끝</small></div></div>
           <div class="glyphs"></div><div class="swatches"></div>
         </div>
         <div class="pcard" data-p="1">
-          <div class="ph"><div class="pv" id="prev1"></div><div><b id="p2title">컴퓨터</b><br><small>오른쪽에서 출발 → 왼쪽 끝</small></div></div>
+          <div class="ph"><div class="pv" id="prev1"></div><div><b id="p2title">컴퓨터</b><br><small class="sidehint">오른쪽에서 출발 → 왼쪽 끝</small></div></div>
           <div class="glyphs"></div><div class="swatches"></div>
         </div>
       </div>
@@ -966,7 +988,7 @@ const store = {
 };
 
 const S = Object.assign({
-  mode:'solo', level:'normal', theme:'kids', turnSec:30, music:true, sfx:true, track:'basic',
+  game:'quoridor', mode:'solo', level:'normal', theme:'kids', turnSec:30, music:true, sfx:true, track:'basic',
   players:[{piece:'🦊', color:'#FF9F1C'}, {piece:'🐲', color:'#3D7BFF'}]
 }, store.get('settings', {}));
 
@@ -2374,6 +2396,16 @@ const SONG_PIANO = makeSong({ step:0.26, spb:8, order:['A','B','A','C','A','B'],
 
 /* --- 축제의 밤: G장조 축제 행진 (금관 선율 + 글로켄슈필 + 튜바 + 행진 스네어 + 심벌) --- */
 const FV = {G:[55,59,62], C:[55,60,64], D:[54,57,62], Em:[55,59,64], Am:[57,60,64]};
+
+// 밝은 트럼펫: 톱니파 두 개 + 열린 필터 + 살짝 떨림
+function trumpet(n, t, dur, vol){
+  const lfo = ac.createOscillator(); lfo.frequency.value = 5.5; const ld = ac.createGain(); ld.gain.value = mtof(n)*0.006; lfo.connect(ld);
+  const f = ac.createBiquadFilter(); f.type='lowpass'; f.Q.value = 1.5; f.frequency.setValueAtTime(1500,t); f.frequency.linearRampToValueAtTime(3800,t+0.05);
+  const g = ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+0.025);
+  g.gain.setValueAtTime(vol*0.85,t+Math.max(0.05,dur*0.75)); g.gain.linearRampToValueAtTime(0.0001,t+dur+0.06);
+  [0, 0.005].forEach(dt => { const o = ac.createOscillator(); o.type='sawtooth'; o.frequency.value = mtof(n)*(1+dt); ld.connect(o.frequency); o.connect(f); o.start(t); o.stop(t+dur+0.1); });
+  f.connect(g); g.connect(bgmGain); lfo.start(t); lfo.stop(t+dur+0.1);
+}
 const SONG_FIRE = makeSong({ step:0.2, spb:8, order:['A','B','A','C','A','B'],
   chords:{A:[[43,FV.G],[43,FV.G],[36,FV.C],[43,FV.G],[38,FV.D],[38,FV.D],[43,FV.G],[43,FV.G]],
           B:[[40,FV.Em],[36,FV.C],[43,FV.G],[38,FV.D],[40,FV.Em],[36,FV.C],[38,FV.D],[43,FV.G]],
@@ -2384,23 +2416,32 @@ const SONG_FIRE = makeSong({ step:0.2, spb:8, order:['A','B','A','C','A','B'],
           32:[76,1],33:[78,1],34:[79,2],36:[83,2],38:[88,2], 40:[88,2],42:[86,2],44:[84,4], 48:[83,2],50:[81,2],52:[78,2],54:[81,2], 56:[79,6],62:[74,2]},
        C:{0:[76,4],4:[79,4],8:[84,8],16:[83,4],20:[79,4],24:[74,8],32:[76,4],36:[81,4],40:[78,8],48:[79,4],52:[83,4],56:[79,8]}},
   beat:({t,s,bar,root,voi,part}) => {
+    // 모든 악기를 휴대폰 스피커가 잘 내는 중음역에 배치
     if (part==='C'){
-      if (s===0) tone(bgmGain, mtof(root), t, {dur:0.7, vol:0.22});
-      if (s===4) tone(bgmGain, mtof(root+7), t, {dur:0.5, vol:0.15});
-      if (s===2 || s===6) voi.forEach(n => bell(bgmGain, n+12, t, 0.025, 0.4));
+      // 잔잔한 구간: 피아노 쿵짝 + 종 화음
+      if (s===0) pianoTone(bgmGain, root+12, t, 0.16, 0.9);
+      if (s===4) pianoTone(bgmGain, root+19, t, 0.12, 0.7);
+      if (s===2 || s===6) voi.forEach(n => pianoTone(bgmGain, n, t, 0.06, 0.4));
+      if (s%2===1) noise(bgmGain, t, {dur:0.03, vol:0.04, type:'highpass', f:8000});
       return;
     }
-    if (s===0) brass(bgmGain, root, t, 0.18, 0.13);                    // 튜바 '움'
-    if (s===4) brass(bgmGain, root+7, t, 0.16, 0.1);                   // '빠'
-    if (s===2 || s===6){ voi.forEach(n => brass(bgmGain, n, t, 0.08, 0.04)); noise(bgmGain, t, {dur:0.12, vol:0.16, type:'bandpass', f:1900, q:0.7}); }
-    if (bar%2===1 && s===7){ noise(bgmGain, t, {dur:0.05, vol:0.1, type:'bandpass', f:1900, q:0.7}); noise(bgmGain, t+0.1, {dur:0.05, vol:0.12, type:'bandpass', f:1900, q:0.7}); }
-    if (s%2===1) noise(bgmGain, t, {dur:0.03, vol:0.03, type:'highpass', f:8000});
-    if (s===0 && (bar===0 || bar===4)) noise(bgmGain, t, {dur:1.4, vol:0.1, type:'highpass', f:5000});
+    // 베이스: 한 옥타브 올린 '움-빠' (피아노 + 짧은 트럼본)
+    if (s===0){ pianoTone(bgmGain, root+12, t, 0.2, 0.5); brass(bgmGain, root+12, t, 0.16, 0.12); }
+    if (s===4){ pianoTone(bgmGain, root+19, t, 0.16, 0.4); brass(bgmGain, root+19, t, 0.14, 0.1); }
+    // 엇박 피아노 화음 '짝'
+    if (s===2 || s===6) voi.forEach(n => pianoTone(bgmGain, n, t, 0.085, 0.3));
+    // 드럼: 쿵 · 짝 · 박수 · 하이햇
+    if (s===0 || s===4) tone(bgmGain, 130, t, {dur:0.18, vol:0.45, to:55});
+    if (s===2 || s===6){ noise(bgmGain, t, {dur:0.14, vol:0.3, type:'bandpass', f:1900, q:0.7}); noise(bgmGain, t+0.012, {dur:0.06, vol:0.15, type:'bandpass', f:1300, q:1.2}); }
+    if (bar%2===1 && s===7){ noise(bgmGain, t, {dur:0.05, vol:0.16, type:'bandpass', f:1900, q:0.7}); noise(bgmGain, t+0.1, {dur:0.05, vol:0.2, type:'bandpass', f:1900, q:0.7}); }
+    noise(bgmGain, t, {dur:0.03, vol: s%2 ? 0.05 : 0.03, type:'highpass', f:8000});
+    if (s===0 && (bar===0 || bar===4)) noise(bgmGain, t, {dur:1.4, vol:0.16, type:'highpass', f:5000});
   },
   lead:(n,t,dur,{sec,part}) => {
-    if (part==='C'){ bell(bgmGain, n+12, t, 0.09, Math.max(0.5,dur)); return; }
-    brass(bgmGain, n, t, dur*0.9, 0.12);
-    bell(bgmGain, n+12, t, sec>=2 ? 0.06 : 0.035, 0.5);
+    if (part==='C'){ bell(bgmGain, n+12, t, 0.16, Math.max(0.5,dur)); pianoTone(bgmGain, n, t, 0.1, dur*1.2); return; }
+    trumpet(n, t, dur*0.92, 0.1);                                      // 밝은 트럼펫 선율
+    bell(bgmGain, n+12, t, sec>=2 ? 0.12 : 0.08, 0.5);                 // 글로켄슈필이 한 옥타브 위로
+    pianoTone(bgmGain, n, t, 0.07, dur*1.1);
   }
 });
 
@@ -2693,7 +2734,25 @@ function pawnHTML(p, scale){
   const pl = S.players[p];
   return `<div class="token" style="--pc:${pl.color};font-size:${scale}">${pl.piece}</div>`;
 }
+const RULE_TEXT = {
+  quoridor:'내 말을 반대편 끝까지 먼저 보내면 이겨요. 한 턴에 말을 한 칸 옮기거나, 벽을 하나 세워 상대 길을 막을 수 있어요. 단, 길을 완전히 막으면 안 돼요!',
+  quixo:'5×5 판에서 내 표시 5개를 가로·세로·대각선 한 줄로 먼저 만들면 이겨요. 가장자리의 빈 칸이나 내 칸을 하나 뽑아 내 표시로 바꾼 뒤, 줄의 다른 끝에 밀어 넣어요. 상대 줄을 만들어 주면 상대가 이겨요!'
+};
+function renderGameLabels(){
+  document.documentElement.dataset.game = S.game;
+  const q = S.game === 'quixo';
+  const h1 = document.querySelector('.logo h1');
+  h1.setAttribute('aria-label', q ? '퀵소' : '쿼리도');
+  h1.innerHTML = q ? '<span>퀵</span><span>소</span>' : '<span>쿼</span><span>리</span><span>도</span>';
+  document.querySelector('.logo .sub').textContent = q ? 'Quixo' : 'Quoridor';
+  document.querySelector('.logo .rule').textContent = RULE_TEXT[S.game];
+  const sh = document.querySelectorAll('.pcard .sidehint');
+  if (sh[0]) sh[0].textContent = q ? '먼저 둬요 · 5개 한 줄 만들기' : '왼쪽에서 출발 → 오른쪽 끝';
+  if (sh[1]) sh[1].textContent = q ? '두 번째로 둬요 · 5개 한 줄 만들기' : '오른쪽에서 출발 → 왼쪽 끝';
+}
 function renderSetup(){
+  document.querySelectorAll('#gameChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.game===S.game));
+  renderGameLabels();
   document.querySelectorAll('#modeChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode===S.mode));
   document.querySelectorAll('#levelChips .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.level===S.level));
   $('#levelChips').hidden = S.mode !== 'solo';
@@ -2721,6 +2780,7 @@ document.querySelectorAll('.pcard').forEach(card => {
     sfx('click'); saveSettings(); renderSetup();
   });
 });
+$('#gameChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.game=b.dataset.game; sfx('click'); saveSettings(); renderSetup(); });
 $('#modeChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.mode=b.dataset.mode; sfx('click'); saveSettings(); renderSetup(); });
 $('#levelChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; S.level=b.dataset.level; sfx('click'); saveSettings(); renderSetup(); });
 $('#gTrack').onclick = () => {
@@ -2988,13 +3048,140 @@ function aiPick(state, p, level){
 }
 function aiChoose(p){ return aiPick(G, p, S.level); }
 
+/* ================= 퀵소 규칙 =================
+   판 Q[25]: -1 빈칸, 0 플레이어1, 1 플레이어2. 칸 번호 = y*5 + x
+   한 수 = 가장자리의 (빈칸 또는 내 칸) 하나를 뽑아 내 표시로 바꾸고, 그 칸을 지나는 줄의 다른 끝에 밀어 넣기 */
+const QN = 5;
+const QLINES = (() => { const L = [];
+  for (let y=0;y<5;y++) L.push([0,1,2,3,4].map(x => y*5+x));
+  for (let x=0;x<5;x++) L.push([0,1,2,3,4].map(y => y*5+x));
+  L.push([0,6,12,18,24], [4,8,12,16,20]); return L; })();
+const qEdge = i => { const x = i%5, y = (i/5)|0; return x===0 || y===0 || x===4 || y===4; };
+function qTargets(from){
+  const x = from%5, y = (from/5)|0, t = [];
+  if (x !== 0) t.push(y*5 + 0);
+  if (x !== 4) t.push(y*5 + 4);
+  if (y !== 0) t.push(0*5 + x);
+  if (y !== 4) t.push(4*5 + x);
+  return t;
+}
+function qMoves(Q, p){
+  const res = [];
+  for (let i=0;i<25;i++) if (qEdge(i) && (Q[i] === -1 || Q[i] === p)) for (const to of qTargets(i)) res.push({from:i, to});
+  return res;
+}
+function qApply(Q, p, m){
+  const R = Q.slice(), fx = m.from%5, fy = (m.from/5)|0, tx = m.to%5, ty = (m.to/5)|0;
+  if (fy === ty){                       // 같은 가로줄
+    if (tx < fx) for (let x=fx; x>tx; x--) R[fy*5+x] = R[fy*5+x-1];
+    else         for (let x=fx; x<tx; x++) R[fy*5+x] = R[fy*5+x+1];
+  } else {                              // 같은 세로줄
+    if (ty < fy) for (let y=fy; y>ty; y--) R[y*5+fx] = R[(y-1)*5+fx];
+    else         for (let y=fy; y<ty; y++) R[y*5+fx] = R[(y+1)*5+fx];
+  }
+  R[m.to] = p;
+  return R;
+}
+// 둔 사람(mover) 기준 승자: 상대 줄이 생기면 상대 승 (내 줄이 같이 생겨도)
+function qWinner(Q, mover){
+  let mine = false, theirs = false;
+  for (const L of QLINES){ const v = Q[L[0]]; if (v < 0) continue; if (L.every(i => Q[i] === v)){ if (v === mover) mine = true; else theirs = true; } }
+  return theirs ? 1-mover : mine ? mover : -1;
+}
+function qWinLine(Q, who){ return QLINES.find(L => L.every(i => Q[i] === who)) || null; }
+const QW = [0, 1, 4, 16, 64, 0];
+function qEval(Q, side){
+  let v = 0;
+  for (const L of QLINES){
+    let a = 0, b = 0;
+    for (const i of L){ if (Q[i] === side) a++; else if (Q[i] === 1-side) b++; }
+    if (b === 0) v += QW[a]; if (a === 0) v -= QW[b]*1.1;
+  }
+  return v + 0.6;                       // 둘 차례 이점
+}
+function qSearch(Q, side, depth, alpha, beta){
+  if (depth === 0) return qEval(Q, side);
+  const ms = qMoves(Q, side); let best = -Infinity;
+  for (const m of ms){
+    const R = qApply(Q, side, m), w = qWinner(R, side);
+    const v = w === side ? 10000 + depth : w === 1-side ? -10000 - depth : -qSearch(R, 1-side, depth-1, -beta, -alpha);
+    if (v > best) best = v; if (v > alpha) alpha = v; if (alpha >= beta) break;
+  }
+  return best;
+}
+const QX_CFG = {easy:{depth:1, noise:6, rand:0.25}, normal:{depth:2, noise:1.2, rand:0}, hard:{depth:3, noise:0.1, rand:0}};
+function qxPick(Q, p, level){
+  const cfg = QX_CFG[level] || QX_CFG.normal, ms = qMoves(Q, p);
+  // 쉬움: 가끔 아무 수나 (단, 바로 지는 수는 피함)
+  if (cfg.rand && Math.random() < cfg.rand){
+    const safe = ms.filter(m => qWinner(qApply(Q, p, m), p) !== 1-p);
+    if (safe.length) return safe[Math.random()*safe.length|0];
+  }
+  let best = null, bv = -Infinity;
+  for (const m of ms){
+    const R = qApply(Q, p, m), w = qWinner(R, p);
+    const raw = w === p ? 100000 : w === 1-p ? -100000 : -qSearch(R, 1-p, cfg.depth-1, -Infinity, Infinity);
+    const v = raw + (Math.abs(raw) > 5000 ? 0 : Math.random()*cfg.noise);
+    if (v > bv){ bv = v; best = m; }
+  }
+  return best;
+}
+
 /* ================= 화면 그리기 ================= */
 const board = $('#board');
 const U = 110, CS = 10, ST = 12.5;
 const pct = v => (v/U*100)+'%';
 let cellEls = [], pawnEls = [], ghostEl = null;
 
+const QS = 17.4, QG = 2.6, QO = 1.3;      // 퀵소 칸 크기 · 간격 · 여백 (%)
+function buildQuixoBoard(){
+  board.querySelectorAll('.cell,.wall,.pawn').forEach(e => e.remove());
+  board.classList.add('qx');
+  cellEls = []; pawnEls = [];
+  for (let i=0;i<25;i++){
+    const x = i%5, y = (i/5)|0, c = document.createElement('div');
+    c.className = 'cell c'+((x*3+y*2+(x*y)%2)%4);
+    c.style.left = (QO + x*(QS+QG))+'%'; c.style.top = (QO + y*(QS+QG))+'%';
+    board.appendChild(c); cellEls[i] = c;
+  }
+  ghostEl = document.createElement('div'); ghostEl.className = 'wall ghost'; ghostEl.hidden = true; board.appendChild(ghostEl);
+  renderQuixo();
+}
+// 판 표시. slide = {cells:[...], dx, dy}: 밀린 칸들을 한 칸 뒤에서 미끄러져 오게
+function renderQuixo(slide){
+  for (let i=0;i<25;i++){
+    const c = cellEls[i], v = G.Q[i];
+    c.innerHTML = v < 0 ? '' : `<div class="token" style="--pc:${S.players[v].color}">${S.players[v].piece}</div>`;
+    c.classList.toggle('lastin', G.lastIn === i);
+  }
+  if (slide){
+    slide.cells.forEach(i => { const t = cellEls[i].firstElementChild; if (!t) return;
+      t.style.transition = 'none'; t.style.transform = `translate(${-slide.dx*115}%, ${-slide.dy*115}%)`; });
+    void board.offsetWidth;
+    slide.cells.forEach(i => { const t = cellEls[i].firstElementChild; if (!t) return; t.style.transition = ''; t.style.transform = ''; });
+  }
+}
+const QARROW = {L:'←', R:'→', U:'↑', D:'↓'};
+function drawQuixoHighlights(){
+  cellEls.forEach(c => { c.classList.remove('pick','sel','tgt'); c.removeAttribute('data-arrow'); });
+  if (G.over || isAI(G.turn) || paused) return;
+  const p = G.turn, col = S.players[p].color;
+  if (G.qsel == null){
+    for (let i=0;i<25;i++) if (qEdge(i) && (G.Q[i] === -1 || G.Q[i] === p)){ cellEls[i].classList.add('pick'); cellEls[i].style.setProperty('--hc', col); }
+    return;
+  }
+  cellEls[G.qsel].classList.add('sel');
+  const fx = G.qsel%5, fy = (G.qsel/5)|0;
+  qTargets(G.qsel).forEach(t => {
+    const tx = t%5, ty = (t/5)|0, c = cellEls[t];
+    // 화살표 = 밀어 넣는 방향 (끝에서 뽑은 자리 쪽으로)
+    const dir = ty === fy ? (tx < fx ? 'R' : 'L') : (ty < fy ? 'D' : 'U');
+    c.classList.add('tgt'); c.setAttribute('data-arrow', QARROW[dir]);
+  });
+}
 function buildBoard(){
+  if (S.game === 'quixo') return buildQuixoBoard();
+  board.classList.remove('qx');
   board.querySelectorAll('.cell,.wall,.pawn').forEach(e => e.remove());
   cellEls = [];
   for (let y=0;y<N;y++) for (let x=0;x<N;x++){
@@ -3024,6 +3211,7 @@ function addWallEl(w){
   placeWallEl(e, w.o, w.x, w.y); board.insertBefore(e, ghostEl);
 }
 function drawPawns(hopP){
+  if (S.game === 'quixo') return;
   [0,1].forEach(p => {
     const e = pawnEls[p], s = G.pos[p];
     e.style.left = pct(s.x*ST+CS/2); e.style.top = pct(s.y*ST+CS/2);
@@ -3042,10 +3230,10 @@ function buildPanels(){
     el.innerHTML = `
       <div class="pv">${pawnHTML(p, 'calc(1em + 10px)')}</div>
       <div class="pname">${nm}</div>
-      <div class="goalhint">${p===0?'오른쪽 끝으로 →':'← 왼쪽 끝으로'}</div>
+      <div class="goalhint">${S.game==='quixo' ? '5개 한 줄!' : (p===0?'오른쪽 끝으로 →':'← 왼쪽 끝으로')}</div>
       <div class="timer idle"><svg viewBox="0 0 48 48"><circle class="trk" cx="24" cy="24" r="20"/><circle class="arc" cx="24" cy="24" r="20"/></svg><span class="tnum">대기</span></div>
-      <div class="lbl"><span>남은 벽</span><b class="wcount">10</b></div>
-      <div class="wbars">${'<i></i>'.repeat(10)}</div>
+      ${S.game==='quixo' ? '<div class="lbl"><span>내 칸</span><b class="qcount">0</b></div><div class="lbl"><span>최대 연결</span><b class="qbest">0</b></div>'
+        : `<div class="lbl"><span>남은 벽</span><b class="wcount">10</b></div><div class="wbars">${'<i></i>'.repeat(10)}</div>`}
       <div class="lbl"><span>시간초과</span></div>
       <div class="strikes"><i></i><i></i><i></i></div>`;
   });
@@ -3054,14 +3242,24 @@ function updateHUD(){
   [0,1].forEach(p => {
     const el = $('#panel'+p);
     el.classList.toggle('active', p===G.turn && !G.over);
-    el.querySelector('.wcount').textContent = G.wallsLeft[p];
-    el.querySelectorAll('.wbars i').forEach((b,i) => b.classList.toggle('used', i >= G.wallsLeft[p]));
+    if (S.game === 'quixo'){
+      el.querySelector('.qcount').textContent = G.Q.filter(v => v === p).length;
+      el.querySelector('.qbest').textContent = Math.max(0, ...QLINES.map(L => L.some(i => G.Q[i] === 1-p) ? 0 : L.filter(i => G.Q[i] === p).length));
+    } else {
+      el.querySelector('.wcount').textContent = G.wallsLeft[p];
+      el.querySelectorAll('.wbars i').forEach((b,i) => b.classList.toggle('used', i >= G.wallsLeft[p]));
+    }
     el.querySelectorAll('.strikes i').forEach((s,i) => { const on = i < G.strikes[p]; s.classList.toggle('on', on); s.textContent = on?'✕':''; });
   });
   const p = G.turn;
   $('#turnBanner').innerHTML = G.over ? '게임 끝' :
     `<span class="dot" style="background:${S.players[p].color}"></span>${isAI(p) ? '컴퓨터가 생각 중…' : pname(p)+' 차례'}`;
   const human = !isAI(p) && !G.over;
+  if (S.game === 'quixo'){
+    $('#hint').textContent = !human ? '' : G.qsel == null ? '반짝이는 가장자리 칸을 골라요 (빈칸이나 내 칸)' : '화살표 칸을 눌러 밀어 넣어요 · 고른 칸을 다시 누르면 취소';
+    drawQuixoHighlights();
+    return;
+  }
   $('#btnMove').disabled = !human; $('#btnWall').disabled = !human || G.wallsLeft[p]===0;
   if (G.wallsLeft[p]===0 && G.action==='wall') G.action = 'move';
   $('#btnMove').setAttribute('aria-pressed', G.action==='move');
@@ -3183,6 +3381,7 @@ function startTurn(first){
     setTimer(p, null);
     const delay = 650 + Math.random()*650;
     aiTimer = setTimeout(() => {
+      if (S.game === 'quixo'){ doQuixo(p, qxPick(G.Q, p, S.level)); return; }
       const a = aiChoose(p);
       if (a.type==='move') doMove(p, a); else doWall(p, a.o, a.x, a.y);
     }, delay);
@@ -3224,13 +3423,23 @@ function onTimeout(p){
 function afterAction(p){
   clearInterval(tickTimer);
   G.turns++;
-  if (G.pos[p].x === GOAL[p]) return endGame(p, 'goal');
+  if (S.game === 'quixo'){
+    if (G.qwin >= 0) return endGame(G.qwin, G.qwin === p ? 'line' : 'gift');
+    if (G.turns >= 200) return endGame(-1, 'draw');
+  } else if (G.pos[p].x === GOAL[p]) return endGame(p, 'goal');
   G.turn = 1-p; G.action = 'move';
   startTurn();
 }
 function doMove(p, m){
   G.hist[p].push({...G.pos[p]}); if (G.hist[p].length > 6) G.hist[p].shift();   // 컴퓨터 되돌아가기 방지용 최근 위치
   G.pos[p] = {x:m.x, y:m.y};
+  moveFx(p, m.x, m.y, !!m.jump);
+  drawPawns(p);
+  afterAction(p);
+}
+// 말 이동/퀵소 한 수 때 배경·소리 효과 (x, y는 0~8 좌표)
+function moveFx(p, x, y, jump){
+  const m = {x, y, jump};
   if (S.theme==='piano') pianoAdvance();
   sfx(m.jump ? 'jump' : 'move');
   if (S.theme==='piano' && pianoBg){ pianoBg.hit(pianoCur); pianoBg.dance(); }
@@ -3247,16 +3456,34 @@ function doMove(p, m){
     if (document.documentElement.classList.contains('is-rotated')) cubeShift(py/vh, (vw - px)/vw);   // 돌린 화면 좌표로 변환
     else cubeShift(px/vw, py/vh);
   }
-  drawPawns(p);
-  afterAction(p);
 }
 function doWall(p, o, x, y){
   const w = {o,x,y,p}; G.ws.add(o+x+','+y); G.walls.push(w); G.wallsLeft[p]--;
   addWallEl(w); sfx('wall');
+  wallFx();
+  afterAction(p);
+}
+// 벽 세우기 / 퀵소 '4개 연결' 같은 큰 순간의 효과
+function wallFx(){
   if (S.theme==='dino' && dinoBg){ dinoBg.fly(); sfx('ptero'); }
   if (S.theme==='piano' && pianoBg) pianoBg.dance();
   if (S.theme==='fireworks' && fireBg) fireBg.volley();
   if (S.theme==='maze' && mazeBg) mazeBg.chase();
+}
+// 퀵소 한 수
+function doQuixo(p, m){
+  const before = G.Q, fx = m.from%5, fy = (m.from/5)|0, tx = m.to%5, ty = (m.to/5)|0;
+  G.Q = qApply(before, p, m); G.qsel = null; G.lastIn = m.to;
+  // 밀린 칸들 (뽑은 자리 ~ 넣은 자리)
+  const cells = [], dx = fy === ty ? Math.sign(fx - tx) : 0, dy = fy === ty ? 0 : Math.sign(fy - ty);
+  if (fy === ty) for (let x=Math.min(fx,tx); x<=Math.max(fx,tx); x++) cells.push(fy*5+x);
+  else for (let y=Math.min(fy,ty); y<=Math.max(fy,ty); y++) cells.push(y*5+fx);
+  renderQuixo({cells, dx, dy});
+  moveFx(p, tx*2, ty*2, false);
+  // 4개가 이어지는 위협이 새로 생기면 큰 효과
+  const four = Q => QLINES.some(L => !L.some(i => Q[i] === 1-p) && L.filter(i => Q[i] === p).length >= 4);
+  if (four(G.Q) && !four(before)){ sfx('wall'); wallFx(); }
+  G.qwin = qWinner(G.Q, p);
   afterAction(p);
 }
 
@@ -3279,7 +3506,7 @@ function showGhost(s){
 }
 function humanTurn(){ return G && !G.over && !paused && !isAI(G.turn) && !$('#game').hidden && $('#overlay').hidden; }
 board.addEventListener('pointermove', e => {
-  if (!humanTurn() || G.action!=='wall' || e.pointerType!=='mouse' || G.wallsLeft[G.turn]===0) return;
+  if (!humanTurn() || S.game === 'quixo' || G.action!=='wall' || e.pointerType!=='mouse' || G.wallsLeft[G.turn]===0) return;
   showGhost(slotAt(boardPoint(e)));
 });
 board.addEventListener('pointerleave', e => { if (e.pointerType==='mouse' && G && G.action==='wall'){ ghostEl.hidden = true; G.ghost = null; } });
@@ -3287,6 +3514,21 @@ board.addEventListener('pointerdown', e => {
   if (!humanTurn()) return;
   e.preventDefault();
   const pt = boardPoint(e), p = G.turn;
+  if (S.game === 'quixo'){
+    const step = QS + QG, fx = (pt.ux/U*100 - QO) / step, fy = (pt.uy/U*100 - QO) / step;
+    const x = Math.floor(fx), y = Math.floor(fy);
+    if (x < 0 || y < 0 || x > 4 || y > 4){ sfx('invalid'); return; }
+    const i = y*5 + x;
+    if (G.qsel == null){
+      if (qEdge(i) && (G.Q[i] === -1 || G.Q[i] === p)){ G.qsel = i; sfx('click'); updateHUD(); }
+      else { sfx('invalid'); toast(qEdge(i) ? '상대 칸은 뽑을 수 없어요' : '가장자리 칸만 뽑을 수 있어요', true); }
+      return;
+    }
+    if (i === G.qsel){ G.qsel = null; sfx('click'); updateHUD(); return; }
+    if (qTargets(G.qsel).includes(i)){ doQuixo(p, {from:G.qsel, to:i}); return; }
+    if (qEdge(i) && (G.Q[i] === -1 || G.Q[i] === p)){ G.qsel = i; sfx('click'); updateHUD(); return; }
+    sfx('invalid'); return;
+  }
   if (G.action === 'move'){
     const cx = clamp(Math.floor(pt.ux/ST),0,8), cy = clamp(Math.floor(pt.uy/ST),0,8);
     const m = (G.legal||[]).find(m => m.x===cx && m.y===cy);
@@ -3316,7 +3558,7 @@ $('#btnMove').onclick = () => setAction('move');
 $('#btnWall').onclick = () => setAction('wall');
 $('#btnRot').onclick = rotate;
 document.addEventListener('keydown', e => {
-  if (!humanTurn()) return;
+  if (!humanTurn() || S.game === 'quixo') return;
   if (e.key==='r' || e.key==='R'){ rotate(); }
   else if (e.key==='w' || e.key==='W'){ setAction(G.action==='wall'?'move':'wall'); }
 });
@@ -3325,7 +3567,9 @@ document.addEventListener('keydown', e => {
 function newGame(){
   if (S.theme==='maze' && mazeBg) mazeBg.regen();       // 게임마다 새 미로
   G = { pos:[{x:0,y:4},{x:8,y:4}], ws:new Set(), walls:[], wallsLeft:[10,10], strikes:[0,0],
-        turn:0, over:false, action:'move', orient:'H', ghost:null, turns:0, legal:[], hist:[[],[]] };
+        turn:0, over:false, action:'move', orient:'H', ghost:null, turns:0, legal:[], hist:[[],[]],
+        Q:Array(25).fill(-1), qsel:null, qwin:-1, lastIn:-1 };
+  document.documentElement.dataset.game = S.game;
   $('#setup').hidden = true; $('#game').hidden = false; $('#overlay').hidden = true;
   $('#confetti').innerHTML = '';
   buildBoard(); buildPanels(); fit(); drawPawns();
@@ -3335,18 +3579,33 @@ function newGame(){
 function endGame(winner, why){
   G.over = true; clearInterval(tickTimer); clearTimeout(aiTimer);
   setTimer(-1, null); updateHUD(); drawPawns();
+  if (S.game === 'quixo'){
+    drawQuixoHighlights();
+    const L = winner >= 0 ? qWinLine(G.Q, winner) : null;
+    if (L) L.forEach(i => cellEls[i].classList.add('winline'));
+  }
+  if (winner < 0){
+    sfx('lose');
+    setTimeout(() => openDialog(`<h3>무승부</h3><p>200수 안에 승부가 나지 않았어요.</p>
+      <div class="row"><button class="start" id="dAgain" style="font-size:20px;padding:12px 26px;min-height:52px">한 판 더</button>
+      <button class="gbtn" id="dSetup">설정 바꾸기</button></div>`, { dAgain: () => { sfx('click'); newGame(); }, dSetup: goSetup }), 700);
+    return;
+  }
   const humanLost = S.mode==='solo' && winner===1;
   sfx(humanLost ? 'lose' : 'win');
   if (!humanLost) confetti(S.players[winner].color);
-  const reason = why==='goal'
-    ? `${pname(winner)}이(가) 먼저 반대편 끝에 도착했어요.`
+  const reason = why==='goal' ? `${pname(winner)}이(가) 먼저 반대편 끝에 도착했어요.`
+    : why==='line' ? `${pname(winner)}이(가) 5개를 한 줄로 만들었어요.`
+    : why==='gift' ? `${pname(1-winner)}이(가) 밀어 넣다가 ${pname(winner)}의 줄을 만들어 줬어요.`
     : `${pname(1-winner)}이(가) 시간 초과를 3번 했어요.`;
   const title = S.mode==='solo' ? (winner===0 ? '이겼어요!' : '아쉽게 졌어요') : `${pname(winner)} 승리!`;
   setTimeout(() => openDialog(`
     <div class="big">${pawnHTML(winner,'52px')}</div>
     <h3>${title}</h3>
     <p>${reason}</p>
-    <div class="stats"><div><b>${G.turns}</b>턴</div><div><b>${10-G.wallsLeft[0]}</b>P1 벽</div><div><b>${10-G.wallsLeft[1]}</b>${S.mode==='solo'?'컴퓨터':'P2'} 벽</div></div>
+    <div class="stats">${S.game==='quixo'
+      ? `<div><b>${G.turns}</b>수</div><div><b>${G.Q.filter(v=>v===0).length}</b>P1 칸</div><div><b>${G.Q.filter(v=>v===1).length}</b>${S.mode==='solo'?'컴퓨터':'P2'} 칸</div>`
+      : `<div><b>${G.turns}</b>턴</div><div><b>${10-G.wallsLeft[0]}</b>P1 벽</div><div><b>${10-G.wallsLeft[1]}</b>${S.mode==='solo'?'컴퓨터':'P2'} 벽</div>`}</div>
     <div class="row"><button class="start" id="dAgain" style="font-size:20px;padding:12px 26px;min-height:52px">한 판 더</button>
     <button class="gbtn" id="dSetup">설정 바꾸기</button></div>`,
     { dAgain: () => { sfx('click'); newGame(); }, dSetup: goSetup }), 700);
