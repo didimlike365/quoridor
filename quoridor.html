@@ -583,6 +583,118 @@ html[data-gtheme] .wall.ghost.bad{background:var(--danger)}
 .board.qx .cell.winline{box-shadow:0 0 0 calc(var(--bs) * .012) #FFD23F, 0 0 22px #FFD23F; z-index:4}
 .board.qx .cell.lastin{box-shadow:inset 0 0 0 calc(var(--bs) * .006) var(--accent), inset 0 -3px 0 var(--cell-edge)}
 html[data-game="quixo"] #game .seg, html[data-game="quixo"] #btnRot{display:none}
+/* ===== 퀵소 그림 규칙 설명 ===== */
+.qx-only{display:none}
+html[data-game="quixo"] .qx-only{display:inline-flex; align-items:center}
+.howto-wrap{display:none; width:100%}
+html[data-game="quixo"] .howto-wrap{display:block}
+html[data-game="quixo"] .logo .rule{display:none}
+.howto{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; width:100%; max-width:760px; margin-inline:auto; text-align:left}
+.hcard{background:var(--panel); color:var(--panel-ink); border:3px solid var(--panel-edge); border-radius:var(--radius); padding:10px; display:flex; flex-direction:column; gap:8px; min-width:0}
+.hcard .hn{display:flex; align-items:center; gap:6px; font-family:var(--f-display); font-size:17px; font-weight:800}
+.hcard .hn b{display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:15px; flex:none}
+.hcard p{margin:0; font-size:14px; line-height:1.45; opacity:.9}
+.hcard p em{font-style:normal; font-weight:800; color:var(--accent)}
+.hcard.warn{border-color:var(--danger)}
+.hcard.warn .hn b{background:var(--danger); color:#fff}
+.hstage{position:relative; height:96px; border-radius:10px; background:rgba(0,0,0,.06); overflow:visible; display:grid; place-items:center}
+/* 미니 판 5×5 */
+.mgrid{display:grid; grid-template-columns:repeat(5,14px); grid-template-rows:repeat(5,14px); gap:3px}
+.mgrid i{border-radius:3px; background:#fff; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); display:grid; place-items:center; font-style:normal; font-size:10px; line-height:1}
+.mgrid i.edge{animation:hEdge 1.2s ease-in-out infinite alternate; box-shadow:inset 0 0 0 2px var(--accent)}
+.mgrid i.mid{opacity:.35}
+@keyframes hEdge{to{background:color-mix(in srgb, var(--accent) 45%, #fff)}}
+.mgrid i.me{background:var(--p0)}
+.mgrid i.op{background:var(--p1)}
+.mgrid i.win{animation:hWin .7s ease-in-out infinite alternate}
+@keyframes hWin{to{transform:scale(1.25); box-shadow:0 0 8px 2px #FFD23F}}
+.mgrid i.x{position:relative}
+.mgrid i.x::after{content:"✕"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:900; font-size:11px; text-shadow:0 0 2px #000}
+/* 돌리기: 빈 칸 → 내 말 */
+.hflip{width:58px; height:58px; position:relative; perspective:300px}
+.hflip .in{position:absolute; inset:0; transform-style:preserve-3d; animation:hFlip 3s ease-in-out infinite}
+.hflip .f{position:absolute; inset:0; border-radius:12px; display:grid; place-items:center; backface-visibility:hidden; -webkit-backface-visibility:hidden; font-size:30px; box-shadow:inset 0 0 0 2px rgba(0,0,0,.3)}
+.hflip .f.a{background:#fff}
+.hflip .f.b{background:var(--p0); transform:rotateY(180deg); font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+@keyframes hFlip{0%,15%{transform:translateY(0) rotateY(0)} 30%{transform:translateY(-12px) rotateY(0)} 55%,85%{transform:translateY(-12px) rotateY(180deg)} 100%{transform:translateY(0) rotateY(180deg)}}
+.hflip .lbl2{position:absolute; left:50%; top:-14px; transform:translateX(-50%); white-space:nowrap; font-size:12px; font-weight:800; background:var(--accent); color:var(--accent-ink); padding:1px 7px; border-radius:999px; animation:hTag 3s infinite}
+@keyframes hTag{0%,45%{opacity:0} 55%,90%{opacity:1} 100%{opacity:0}}
+.hflip .ar{position:absolute; left:-30px; top:50%; transform:translateY(-50%); font-size:22px; opacity:.6}
+/* 밀어 넣기: 한 줄 */
+.hrow{position:relative; width:150px; height:30px}
+.hrow .slot{position:absolute; top:0; width:26px; height:26px; border-radius:6px; background:rgba(0,0,0,.08)}
+.hrow .c{position:absolute; top:0; width:26px; height:26px; border-radius:6px; background:#fff; box-shadow:inset 0 0 0 1px rgba(0,0,0,.3); display:grid; place-items:center; font-size:15px; font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.hrow .c.op{background:var(--p1)}
+.hrow .c.me{background:var(--p0)}
+.hrow .k2{animation:hTake 4s ease-in-out infinite}
+.hrow .k3{animation:hShift3 4s ease-in-out infinite}
+.hrow .k4{animation:hShift4 4s ease-in-out infinite}
+@keyframes hTake{0%,12%{left:62px; top:0; background:#fff} 25%{left:62px; top:-26px; background:#fff} 32%,40%{left:62px; top:-26px; background:var(--p0)} 55%{left:152px; top:-26px; background:var(--p0)} 65%{left:152px; top:0; background:var(--p0)} 80%,100%{left:124px; top:0; background:var(--p0)}}
+@keyframes hShift3{0%,65%{left:93px} 80%,100%{left:62px}}
+@keyframes hShift4{0%,65%{left:124px} 80%,100%{left:93px}}
+.hrow .k2 span{opacity:0; animation:hShowMe 4s infinite}
+@keyframes hShowMe{0%,30%{opacity:0} 33%,100%{opacity:1}}
+.hrow .arw{position:absolute; top:-30px; left:150px; font-size:16px; font-weight:900; color:var(--accent); animation:hArw 4s infinite}
+@keyframes hArw{0%,50%{opacity:0} 55%,80%{opacity:1} 90%,100%{opacity:0}}
+.hcard.warn .hstage{height:auto; padding:8px 4px}
+.hwin{display:flex; gap:8px; align-items:flex-start; justify-content:center; flex-wrap:wrap}
+.hwin > div{display:flex; flex-direction:column; align-items:center}
+.hwin .mgrid{grid-template-columns:repeat(5,10px); grid-template-rows:repeat(5,10px); gap:2px}
+.hwin small{display:block; font-size:11px; line-height:1.25; text-align:center; margin-top:4px; font-weight:800; max-width:76px; word-break:keep-all}
+/* 게임판 위 가르침 표시 */
+.board.qx .cell.nopick::after{content:"✕"; position:absolute; right:6%; top:4%; z-index:3; font-weight:900; font-size:calc(var(--bs) * 0.035);
+  color:#fff; background:var(--danger); border-radius:50%; width:28%; height:28%; display:grid; place-items:center; left:auto; transform:none; opacity:.9; border:0; animation:none}
+.board.qx .cell.inner{opacity:.55}
+.board.qx .cell.willmove{box-shadow:inset 0 0 0 calc(var(--bs) * .006) var(--accent), inset 0 -3px 0 var(--cell-edge)}
+.board.qx .cell .mv{position:absolute; inset:0; display:grid; place-items:center; z-index:4; pointer-events:none; font-size:calc(var(--bs) * 0.05); font-weight:900; color:var(--accent); text-shadow:0 0 4px #fff, 0 0 2px #fff}
+#pause{overflow-y:auto}
+#pause .howto{margin-block:6px}
+
+/* ===== 퀵소 정육면체 말 ===== */
+/* 판 위 칸을 주사위 같은 정육면체 윗면처럼: 둥근 모서리 + 아래·오른쪽 옆면 그림자 */
+.board.qx .cell{border-radius:16%; box-shadow:inset 0 0 0 calc(var(--bs) * .004) rgba(255,255,255,.55), inset calc(var(--bs) * -.008) calc(var(--bs) * -.012) 0 rgba(0,0,0,.18), 0 calc(var(--bs) * .008) 0 rgba(0,0,0,.25)}
+/* 들어 올려 굴리는 3D 정육면체: 앞면(지금 모습) → 한 번 굴러 윗면(내 말)이 앞으로 */
+.board.qx .cell.sel{perspective:calc(var(--bs) * 1.2); overflow:visible; background:transparent !important; box-shadow:none}
+.qcube{position:absolute; inset:0; transform-style:preserve-3d; --cz:calc(var(--bs) * 0.087);
+  animation:qroll .8s cubic-bezier(.45,1.35,.55,1) forwards}
+.qcube .cf{position:absolute; inset:0; border-radius:16%; display:grid; place-items:center; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  background:#FFFDF6; box-shadow:inset 0 0 0 calc(var(--bs) * .005) rgba(0,0,0,.25)}
+.qcube .cf .token{position:absolute; inset:12%}
+.qcube .cf.front{transform:translateZ(var(--cz))}
+.qcube .cf.top{transform:rotateX(90deg) translateZ(var(--cz))}
+.qcube .cf.bottom{transform:rotateX(-90deg) translateZ(var(--cz)); background:#D9D3C2}
+.qcube .cf.left{transform:rotateY(-90deg) translateZ(var(--cz)); background:#E8E2D1}
+.qcube .cf.right{transform:rotateY(90deg) translateZ(var(--cz)); background:#E8E2D1}
+.qcube .cf.back{transform:rotateY(180deg) translateZ(var(--cz)); background:#E8E2D1}
+@keyframes qroll{
+  0%{transform:translateY(0) rotateX(0) rotateY(0)}
+  25%{transform:translateY(-16%) rotateX(0) rotateY(-12deg)}
+  80%{transform:translateY(-16%) rotateX(-96deg) rotateY(-12deg)}
+  100%{transform:translateY(-12%) rotateX(-90deg) rotateY(-8deg)}}
+/* 날아가는 말도 정육면체로 데굴데굴 */
+.qfly .qcube{animation:qtumble .38s linear forwards}
+.qfly .qcube .cf.front .token{display:none}
+@keyframes qtumble{from{transform:rotateX(-90deg)} to{transform:rotateX(-450deg)}}
+.qfly{perspective:calc(var(--bs) * 1.2)}
+/* 그림 설명 ②: 정육면체가 굴러 내 말이 위로 */
+.hcube{width:56px; height:56px; position:relative; perspective:260px}
+.hcube .qcube{--cz:28px; animation:hroll 3.2s ease-in-out infinite}
+.hcube .qcube .cf{border-radius:10px; box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.hcube .qcube .cf .token{position:absolute; inset:10%; border-radius:50%; display:grid; place-items:center; font-size:26px; background:var(--p0); font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+@keyframes hroll{0%,12%{transform:translateY(0) rotateX(0) rotateY(-20deg)} 30%{transform:translateY(-10px) rotateX(0) rotateY(-20deg)}
+  60%,88%{transform:translateY(-10px) rotateX(-90deg) rotateY(-20deg)} 100%{transform:translateY(0) rotateX(-90deg) rotateY(-20deg)}}
+.hcube .lbl2{position:absolute; left:50%; top:-20px; transform:translateX(-50%); white-space:nowrap; font-size:12px; font-weight:800; background:var(--accent); color:var(--accent-ink); padding:1px 7px; border-radius:999px; animation:hTag 3.2s infinite; z-index:2}
+
+/* 판 바깥의 밀어 넣기 화살표 버튼 */
+.qarrow{position:absolute; width:10%; height:10%; z-index:9; display:grid; place-items:center; padding:0; border-radius:50%;
+  background:var(--accent); color:var(--accent-ink); font-size:calc(var(--bs) * 0.065); font-weight:900; line-height:1;
+  border:3px solid var(--panel-edge); box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
+  animation:qarrowBob .7s ease-in-out infinite alternate; touch-action:none}
+.qarrow:hover{filter:brightness(1.12)}
+@keyframes qarrowBob{to{transform:translate(var(--bx,0%), var(--by,0%))}}
+.board.qx .cell.tgtcell{box-shadow:inset 0 0 0 calc(var(--bs) * .008) var(--accent), 0 0 0 calc(var(--bs) * .004) var(--accent)}
+.board.qx{overflow:visible}
+
 /* 퀵소 차례 순서 안내 */
 .qsteps{display:none; gap:6px; flex-basis:100%; justify-content:center; flex-wrap:wrap}
 html[data-game="quixo"] .qsteps{display:flex}
@@ -810,6 +922,7 @@ html.is-rotated body{overflow:hidden}
     <div class="logo">
       <h1 aria-label="쿼리도"><span>쿼</span><span>리</span><span>도</span></h1>
       <div class="sub">Quoridor</div>
+      <div class="howto-wrap" id="qxHowtoSetup"></div>
       <div class="rule">내 말을 반대편 끝까지 먼저 보내면 이겨요. 한 턴에 말을 한 칸 옮기거나, 벽을 하나 세워 상대 길을 막을 수 있어요. 단, 길을 완전히 막으면 안 돼요!</div>
     </div>
 
@@ -939,6 +1052,7 @@ html.is-rotated body{overflow:hidden}
   <header class="gbar">
     <button class="gbtn" id="btnHome"><span class="ico">⌂</span><span class="txt"> 처음으로</span></button>
     <button class="gbtn" id="btnPause"><span class="ico">⏸</span><span class="txt"> 일시정지</span></button>
+    <button class="gbtn qx-only" id="btnRules"><span class="ico">?</span><span class="txt"> 규칙</span></button>
     <div class="turnbanner" id="turnBanner"></div>
     <div class="snd">
       <button class="gbtn" id="gMusic" aria-pressed="true">♪</button>
@@ -960,15 +1074,16 @@ html.is-rotated body{overflow:hidden}
     </div>
     <button class="rot" id="btnRot"><span class="bar H" id="rotBar"></span><span id="rotTxt">가로 벽</span></button>
     <div class="qsteps" id="qsteps" aria-label="퀵소 한 차례 순서">
-      <span data-s="1">① 가장자리 칸 가져오기</span><span data-s="2">② 내 말로 돌리기 ↻</span><span data-s="3">③ 줄 끝에 밀어 넣기</span>
+      <span data-s="1">① 가장자리 칸 가져오기</span><span data-s="2">② 굴려서 내 말로 ↻</span><span data-s="3">③ 줄 끝에 밀어 넣기</span>
     </div>
     <div class="hint" id="hint"></div>
   </div>
   <div id="pause" hidden>
     <div class="pbox">
-      <div class="pico">⏸</div>
-      <h3>잠깐 쉬는 중</h3>
-      <p>게임판은 가려 두었어요. 시간도 멈춰 있어요.</p>
+      <div class="pico" id="pIco">⏸</div>
+      <h3 id="pTitle">잠깐 쉬는 중</h3>
+      <p id="pMsg">게임판은 가려 두었어요. 시간도 멈춰 있어요.</p>
+      <div class="howto-wrap" id="qxHowtoPause"></div>
       <div class="row">
         <button class="start" id="btnResume">▶ 이어하기</button>
         <button class="gbtn" id="btnPauseHome">처음으로</button>
@@ -2762,6 +2877,35 @@ const RULE_TEXT = {
   quoridor:'내 말을 반대편 끝까지 먼저 보내면 이겨요. 한 턴에 말을 한 칸 옮기거나, 벽을 하나 세워 상대 길을 막을 수 있어요. 단, 길을 완전히 막으면 안 돼요!',
   quixo:'판에는 처음부터 빈 칸 25개가 꽉 차 있어요. 내 차례엔 ① 가장자리의 빈 칸이나 내 칸을 하나 가져와 ② 내 말로 돌린 뒤 ③ 그 줄의 끝에서 밀어 넣어요. 내 말 5개를 가로·세로·대각선 한 줄로 먼저 만들면 이겨요. 단, 상대 줄을 만들어 주면 져요!'
 };
+function howtoHTML(){
+  const P0 = S.players[0], P1 = S.players[1];
+  const sty = `--p0:${P0.color}; --p1:${P1.color}`;
+  // ① 미니 판: 가장자리 16칸만 반짝
+  let g1 = ''; for (let i=0;i<25;i++){ const x=i%5, y=(i/5)|0, e = x===0||y===0||x===4||y===4; g1 += `<i class="${e?'edge':'mid'}"></i>`; }
+  // ④ 이기는 줄 / 지는 경우
+  let gw = '', gl = '';
+  for (let i=0;i<25;i++){ const y=(i/5)|0, x=i%5;
+    gw += y===2 ? '<i class="me win"></i>' : (i%7===0 ? '<i class="op"></i>' : '<i></i>');
+    gl += x===1 ? '<i class="op win"></i>' : (i===3||i===18 ? '<i class="me"></i>' : '<i></i>'); }
+  return `<div class="howto" style="${sty}">
+    <div class="hcard"><div class="hn"><b>①</b> 가장자리에서 가져오기</div>
+      <div class="hstage"><div class="mgrid">${g1}</div></div>
+      <p>판엔 처음부터 <em>정육면체 25개</em>가 빈 면이 위로 오게 꽉 차 있어요. 내 차례엔 <em>바깥 테두리 16칸</em> 중에서 <em>빈 칸이나 내 칸</em>을 하나 가져와요. 상대 칸은 못 가져와요.</p></div>
+    <div class="hcard"><div class="hn"><b>②</b> 굴려서 내 말로</div>
+      <div class="hstage"><div class="hcube"><div class="qcube"><div class="cf front"></div><div class="cf top"><div class="token">${P0.piece}</div></div><div class="cf bottom"></div><div class="cf left"></div><div class="cf right"></div><div class="cf back"></div></div><div class="lbl2">↻ 굴려서 내 말!</div></div></div>
+      <p>말은 <em>주사위 같은 정육면체</em>예요. 가져온 정육면체를 <em>데굴 굴려 내 말 면</em>이 위로 오게 해요. 빈 칸이었어도 이제 내 말이에요.</p></div>
+    <div class="hcard"><div class="hn"><b>③</b> 줄 끝에서 밀어 넣기</div>
+      <div class="hstage"><div class="hrow">
+        ${[0,1,2,3,4].map(k => `<div class="slot" style="left:${k*31}px"></div>`).join('')}
+        <div class="c op" style="left:0">${P1.piece}</div><div class="c" style="left:31px"></div>
+        <div class="c k2"><span>${P0.piece}</span></div><div class="c k3 op">${P1.piece}</div><div class="c k4"></div>
+        <div class="arw">⬅</div></div></div>
+      <p>내 말을 <em>그 줄의 끝</em>에 대고 밀어요. 빈자리까지 칸들이 <em>한 칸씩 밀려나요</em>. 가져온 자리에 그대로 다시 넣을 순 없어요.</p></div>
+    <div class="hcard warn"><div class="hn"><b>!</b> 이기고 지는 법</div>
+      <div class="hstage"><div class="hwin"><div><div class="mgrid">${gw}</div><small>내 말 5개 한 줄<br>= 승리 🎉</small></div><div><div class="mgrid">${gl}</div><small>상대 줄 완성해 주면<br>= 패배 ✕</small></div></div></div>
+      <p>가로·세로·대각선으로 <em>내 말 5개</em>를 먼저 이으면 이겨요. 밀다가 <em>상대 줄을 완성해 주면</em> 내 줄이 같이 생겨도 져요!</p></div>
+  </div>`;
+}
 function renderGameLabels(){
   document.documentElement.dataset.game = S.game;
   const q = S.game === 'quixo';
@@ -2770,6 +2914,7 @@ function renderGameLabels(){
   h1.innerHTML = q ? '<span>퀵</span><span>소</span>' : '<span>쿼</span><span>리</span><span>도</span>';
   document.querySelector('.logo .sub').textContent = q ? 'Quixo' : 'Quoridor';
   document.querySelector('.logo .rule').textContent = RULE_TEXT[S.game];
+  if (q) $('#qxHowtoSetup').innerHTML = howtoHTML(); else $('#qxHowtoSetup').innerHTML = '';
   const sh = document.querySelectorAll('.pcard .sidehint');
   if (sh[0]) sh[0].textContent = q ? '먼저 둬요 · 5개 한 줄 만들기' : '왼쪽에서 출발 → 오른쪽 끝';
   if (sh[1]) sh[1].textContent = q ? '두 번째로 둬요 · 5개 한 줄 만들기' : '오른쪽에서 출발 → 왼쪽 끝';
@@ -3187,10 +3332,16 @@ function renderQuixo(slide){
 }
 const QARROW = {L:'←', R:'→', U:'↑', D:'↓'};
 // 고른 칸: 들어 올려 뱅글 돌면서 내 말로 바뀌는 연출
+const tokenHTML = q => `<div class="token" style="--pc:${S.players[q].color}">${S.players[q].piece}</div>`;
+// 정육면체 한 개: 앞면 = 지금 보이는 모습, 윗면 = 굴렸을 때 나올 내 말
+function cubeHTML(frontV, topP){
+  return `<div class="qcube"><div class="cf front">${frontV < 0 ? '' : tokenHTML(frontV)}</div><div class="cf top">${tokenHTML(topP)}</div>
+    <div class="cf bottom"></div><div class="cf left"></div><div class="cf right"></div><div class="cf back"></div></div>`;
+}
+// 고른 칸: 정육면체를 들어 올려 데굴 굴리면 윗면의 내 말이 앞으로 나옴
 function showQuixoSelect(i, p){
-  const c = cellEls[i], v = G.Q[i];
-  const old = v < 0 ? '<div class="f blank"></div>' : `<div class="f"><div class="token" style="--pc:${S.players[v].color}">${S.players[v].piece}</div></div>`;
-  c.innerHTML = `<div class="qflip">${old}<div class="f new"><div class="token" style="--pc:${S.players[p].color}">${S.players[p].piece}</div></div></div><div class="qbadge">↻ 내 말로!</div>`;
+  const c = cellEls[i];
+  c.innerHTML = cubeHTML(G.Q[i], p) + `<div class="qbadge">↻ 굴려서 내 말로!</div>`;
   c.classList.add('sel');
 }
 function syncQstepsAI(){ document.querySelectorAll('#qsteps span').forEach(sp => { sp.classList.toggle('on', +sp.dataset.s === 2); sp.classList.toggle('done', +sp.dataset.s < 2); }); }
@@ -3206,25 +3357,53 @@ function renderCell(i){
   const v = G.Q[i];
   cellEls[i].innerHTML = v < 0 ? '' : `<div class="token" style="--pc:${S.players[v].color}">${S.players[v].piece}</div>`;
 }
+// 화살표 칸에 마우스를 올리면 밀려날 칸들을 미리 보여 줌
+function qxPreview(to){
+  cellEls.forEach(c => { c.classList.remove('willmove'); const m = c.querySelector('.mv'); if (m) m.remove(); });
+  if (to == null || G.qsel == null) return;
+  const from = G.qsel, fx = from%5, fy = (from/5)|0, tx = to%5, ty = (to/5)|0;
+  const dx = fy === ty ? Math.sign(fx - tx) : 0, dy = fy === ty ? 0 : Math.sign(fy - ty);
+  const arrow = dx > 0 ? '→' : dx < 0 ? '←' : dy > 0 ? '↓' : '↑';
+  const cells = []; if (fy === ty) for (let x=Math.min(fx,tx); x<=Math.max(fx,tx); x++) cells.push(fy*5+x); else for (let y=Math.min(fy,ty); y<=Math.max(fy,ty); y++) cells.push(y*5+fx);
+  cells.forEach(i => { if (i === from || i === to) return; cellEls[i].classList.add('willmove'); const m = document.createElement('div'); m.className = 'mv'; m.textContent = arrow; cellEls[i].appendChild(m); });
+}
 function drawQuixoHighlights(){
   if (G.busy) return;
   // 돌려 보이던 칸이 있으면 원래 모습으로 되돌림 (다른 칸은 다시 그리지 않아 미끄러짐 연출이 유지됨)
-  cellEls.forEach((c,i) => { if (c.querySelector('.qflip')) renderCell(i); });
-  cellEls.forEach(c => { c.classList.remove('pick','sel','tgt','gap'); c.removeAttribute('data-arrow'); });
+  cellEls.forEach((c,i) => { if (c.querySelector('.qcube, .qflip, .qbadge')) renderCell(i); });
+  board.querySelectorAll('.qarrow').forEach(e => e.remove());
+  cellEls.forEach(c => { c.classList.remove('pick','sel','tgt','tgtcell','gap'); c.removeAttribute('data-arrow'); });
   syncQsteps();
   if (G.over || isAI(G.turn) || paused) return;
   const p = G.turn, col = S.players[p].color;
+  cellEls.forEach(c => c.classList.remove('nopick','inner','willmove'));
   if (G.qsel == null){
-    for (let i=0;i<25;i++) if (qEdge(i) && (G.Q[i] === -1 || G.Q[i] === p)){ cellEls[i].classList.add('pick'); cellEls[i].style.setProperty('--hc', col); }
+    for (let i=0;i<25;i++){
+      if (!qEdge(i)) cellEls[i].classList.add('inner');                         // 안쪽 9칸은 못 가져옴
+      else if (G.Q[i] === -1 || G.Q[i] === p){ cellEls[i].classList.add('pick'); cellEls[i].style.setProperty('--hc', col); }
+      else cellEls[i].classList.add('nopick');                                    // 상대 칸 ✕
+    }
     return;
   }
   showQuixoSelect(G.qsel, p);
   const fx = G.qsel%5, fy = (G.qsel/5)|0;
   qTargets(G.qsel).forEach(t => {
-    const tx = t%5, ty = (t/5)|0, c = cellEls[t];
-    // 화살표 = 밀어 넣는 방향 (끝에서 뽑은 자리 쪽으로)
+    const tx = t%5, ty = (t/5)|0;
+    // 화살표 = 밀어 넣는 방향. 버튼은 그 줄 끝의 판 바깥에 둬서 다른 칸과 겹치지 않게
     const dir = ty === fy ? (tx < fx ? 'R' : 'L') : (ty < fy ? 'D' : 'U');
-    c.classList.add('tgt'); c.setAttribute('data-arrow', QARROW[dir]);
+    cellEls[t].classList.add('tgtcell');
+    const ctr = k => QO + k*(QS+QG) + QS/2, BW = 10, OUT = 13.5;
+    const b = document.createElement('button');
+    b.className = 'qarrow'; b.type = 'button'; b.textContent = QARROW[dir];
+    b.setAttribute('aria-label', `${QARROW[dir]} 방향으로 밀어 넣기`);
+    if (dir === 'R'){ b.style.left = (-OUT)+'%'; b.style.top = (ctr(ty) - BW/2)+'%'; b.style.setProperty('--bx','14%'); }
+    if (dir === 'L'){ b.style.left = (100 + OUT - BW)+'%'; b.style.top = (ctr(ty) - BW/2)+'%'; b.style.setProperty('--bx','-14%'); }
+    if (dir === 'D'){ b.style.top = (-OUT)+'%'; b.style.left = (ctr(tx) - BW/2)+'%'; b.style.setProperty('--by','14%'); }
+    if (dir === 'U'){ b.style.top = (100 + OUT - BW)+'%'; b.style.left = (ctr(tx) - BW/2)+'%'; b.style.setProperty('--by','-14%'); }
+    b.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (!humanTurn() || G.busy) return; doQuixo(G.turn, {from:G.qsel, to:t}); });
+    b.addEventListener('pointerenter', () => qxPreview(t));
+    b.addEventListener('pointerleave', () => qxPreview(null));
+    board.appendChild(b);
   });
 }
 function buildBoard(){
@@ -3306,7 +3485,7 @@ function updateHUD(){
   if (S.game === 'quixo'){
     $('#hint').textContent = !human ? '' : G.qsel == null
       ? '반짝이는 가장자리 칸(빈칸이나 내 칸)을 하나 골라 가져와요 · 상대 칸은 못 가져와요'
-      : '내 말로 돌렸어요! 화살표 칸을 누르면 그 끝에서 밀어 넣어요 · 고른 칸을 다시 누르면 취소';
+      : '정육면체를 굴려 내 말로 바꿨어요! 판 바깥의 화살표를 누르면 그쪽 끝에서 밀어 넣어요 · 다른 가장자리 칸을 누르면 바꿔 고르기 · 같은 칸을 다시 누르면 취소';
     drawQuixoHighlights();
     return;
   }
@@ -3337,9 +3516,15 @@ function fit(){
   const compact = w < 620 || h < 330;
   const pw = compact ? 72 : Math.min(160, Math.max(120, w*0.16));
   const sg = compact ? 12 : 26;
-  const bs = Math.floor(Math.max(180, Math.min(w - 2*pw - 2*sg - 12, h - (land ? 16 : 24))));
+  let bs = Math.floor(Math.max(180, Math.min(w - 2*pw - 2*sg - 12, h - (land ? 16 : 24))));
+  let gap = sg;
+  if (S.game === 'quixo'){
+    // 퀵소: 판 바깥 화살표 자리(판 크기의 약 14%)를 사방에 남겨 둠
+    bs = Math.floor(Math.max(170, Math.min((w - 2*pw - 12) / 1.3, (h - (land ? 16 : 24)) / 1.3)));
+    gap = Math.max(sg, Math.round(bs * 0.15));
+  }
   stage.classList.toggle('compact', compact);
-  stage.style.setProperty('--pw', pw+'px'); stage.style.setProperty('--sg', sg+'px');
+  stage.style.setProperty('--pw', pw+'px'); stage.style.setProperty('--sg', gap+'px');
   document.documentElement.style.setProperty('--bs', bs+'px');
   pawnEls.forEach(e => e.firstElementChild.style.fontSize = (bs*0.046)+'px');
 }
@@ -3531,12 +3716,13 @@ function doQuixo(p, m){
   G.busy = true;
   const fx = m.from%5, fy = (m.from/5)|0, tx = m.to%5, ty = (m.to/5)|0;
   // 뽑은 자리는 빈 구멍으로, 내 말은 판 밖(넣을 끝의 바깥)으로 날아감
-  cellEls.forEach(c => { c.classList.remove('pick','tgt'); c.removeAttribute('data-arrow'); });
+  cellEls.forEach(c => { c.classList.remove('pick','tgt','tgtcell'); c.removeAttribute('data-arrow'); });
+  board.querySelectorAll('.qarrow').forEach(e => e.remove());
   const sel = cellEls[m.from]; sel.classList.remove('sel'); sel.innerHTML = ''; sel.classList.add('gap');
   const ox = fy === ty ? tx + (tx < fx ? -1 : 1) : tx, oy = fy === ty ? ty : ty + (ty < fy ? -1 : 1);
   const pos = (x, y) => [(QO + x*(QS+QG))+'%', (QO + y*(QS+QG))+'%'];
   const fly = document.createElement('div'); fly.className = 'qfly';
-  fly.innerHTML = `<div class="token" style="--pc:${S.players[p].color}">${S.players[p].piece}</div>`;
+  fly.innerHTML = cubeHTML(-1, p);
   [fly.style.left, fly.style.top] = pos(fx, fy); board.appendChild(fly);
   void fly.offsetWidth;
   [fly.style.left, fly.style.top] = pos(ox, oy);
@@ -3582,6 +3768,13 @@ board.addEventListener('pointermove', e => {
   if (!humanTurn() || S.game === 'quixo' || G.action!=='wall' || e.pointerType!=='mouse' || G.wallsLeft[G.turn]===0) return;
   showGhost(slotAt(boardPoint(e)));
 });
+board.addEventListener('pointermove', e => {
+  if (S.game !== 'quixo' || !humanTurn() || G.busy || G.qsel == null || e.pointerType !== 'mouse') return;
+  const pt = boardPoint(e), step = QS + QG, x = Math.floor((pt.ux/U*100 - QO)/step), y = Math.floor((pt.uy/U*100 - QO)/step);
+  const i = (x>=0 && y>=0 && x<5 && y<5) ? y*5+x : -1;
+  if (!e.target.closest('.qarrow')) qxPreview(null);
+});
+board.addEventListener('pointerleave', e => { if (S.game === 'quixo' && G) qxPreview(null); });
 board.addEventListener('pointerleave', e => { if (e.pointerType==='mouse' && G && G.action==='wall'){ ghostEl.hidden = true; G.ghost = null; } });
 board.addEventListener('pointerdown', e => {
   if (!humanTurn()) return;
@@ -3599,7 +3792,6 @@ board.addEventListener('pointerdown', e => {
       return;
     }
     if (i === G.qsel){ G.qsel = null; sfx('click'); updateHUD(); return; }
-    if (qTargets(G.qsel).includes(i)){ doQuixo(p, {from:G.qsel, to:i}); return; }
     if (qEdge(i) && (G.Q[i] === -1 || G.Q[i] === p)){ G.qsel = i; sfx('click'); updateHUD(); return; }
     sfx('invalid'); return;
   }
@@ -3649,6 +3841,7 @@ function newGame(){
   buildBoard(); buildPanels(); fit(); drawPawns();
   sfx('start'); playTrack(THEME_TRACK[S.theme]);
   setTimeout(() => startTurn(true), 250);
+  if (S.game === 'quixo' && !store.get('qxHowtoSeen', false)){ store.set('qxHowtoSeen', true); setTimeout(() => pauseGame(true), 400); }
 }
 function endGame(winner, why){
   G.over = true; clearInterval(tickTimer); clearTimeout(aiTimer);
@@ -3700,8 +3893,13 @@ function openDialog(html, handlers){
 let pausedLeft = null;
 /* ---- 일시정지 ---- */
 let paused = false, pauseLeft = null, pauseMusic = false;
-function pauseGame(){
+function pauseGame(rules){
   if (!G || G.over || paused || $('#game').hidden || !$('#overlay').hidden) return;
+  const q = S.game === 'quixo';
+  $('#pIco').textContent = rules ? '?' : '⏸';
+  $('#pTitle').textContent = rules ? '퀵소 규칙' : '잠깐 쉬는 중';
+  $('#pMsg').textContent = rules ? '천천히 읽어 보세요. 시간은 멈춰 있어요.' : '게임판은 가려 두었어요. 시간도 멈춰 있어요.';
+  $('#qxHowtoPause').innerHTML = q ? howtoHTML() : '';
   paused = true;
   clearInterval(tickTimer); clearTimeout(aiTimer);
   pauseLeft = isAI(G.turn) ? null : Math.max(0, G.deadline - performance.now());
@@ -3732,12 +3930,13 @@ function resumeGame(){
   else { G.deadline = performance.now() + pauseLeft; lastSec = null; tickTimer = setInterval(onTick, 100); onTick(); }
   updateHUD();
 }
-$('#btnPause').onclick = pauseGame;
+$('#btnPause').onclick = () => pauseGame(false);
+$('#btnRules').onclick = () => pauseGame(true);
 $('#btnResume').onclick = resumeGame;
 $('#btnPauseHome').onclick = goSetup;
-document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(false); });
 document.addEventListener('keydown', e => {
-  if (e.key==='p' || e.key==='P' || e.key==='Escape'){ if (paused) resumeGame(); else pauseGame(); }
+  if (e.key==='p' || e.key==='P' || e.key==='Escape'){ if (paused) resumeGame(); else pauseGame(false); }
 });
 $('#btnHome').onclick = () => {
   if (!G || G.over){ goSetup(); return; }
